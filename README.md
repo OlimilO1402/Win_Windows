@@ -7,7 +7,7 @@
 ![GitHub followers](https://img.shields.io/github/followers/OlimilO1402?style=social)
 
 
-How to create windows  
+How to create windows, works in VB6 as well as in Excel VBA7-x64   
 
 [Link text Here](https://link-url-here.org) 
 
