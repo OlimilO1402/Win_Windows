@@ -88,37 +88,53 @@ Public Enum EWndStyleEx
 End Enum
 
 Public Enum EClsStyle
-    CS_VREDRAW = &H1             '    Zeichnet das gesamte Fenster neu, wenn eine Bewegung oder Größenanpassung die Höhe des Clientbereichs ändert.
-    CS_HREDRAW = &H2             '    Zeichnet das gesamte Fenster neu, wenn durch eine Verschiebung oder Größenanpassung die Breite des Clientbereichs geändert wird.
-    CS_DBLCLKS = &H8             '    Sendet eine Doppelklicknachricht an die Fensterprozedur, wenn der Benutzer mit der Maus doppelklicken, während sich der Cursor in einem Fenster befindet, das zur -Klasse gehört.
-    CS_OWNDC = &H20              '    Weist jedem Fenster in der -Klasse einen eindeutigen Gerätekontext zu.
-    CS_CLASSDC = &H40            '    Weist einen Gerätekontext zu, der von allen Fenstern in der -Klasse gemeinsam verwendet werden soll. Da Fensterklassen prozessspezifisch sind, ist es möglich, dass mehrere Threads einer Anwendung ein Fenster derselben Klasse erstellen. Es ist auch möglich, dass die Threads versuchen, den Gerätekontext gleichzeitig zu verwenden. In diesem Fall lässt das System nur einen Thread zu, um den Zeichnungsvorgang erfolgreich abzuschließen.
-    CS_PARENTDC = &H80           '    Legt das Beschneidungsrechteck des untergeordneten Fensters auf das des übergeordneten Fensters fest, damit das untergeordnete Element auf dem übergeordneten Fenster zeichnen kann. Ein Fenster mit dem CS_PARENTDC Stilbits empfängt einen regulären Gerätekontext aus dem Gerätekontextcache des Systems. Es gibt dem untergeordneten Element nicht die Gerätekontext- oder Gerätekontexteinstellungen des übergeordneten Elements. Die Angabe CS_PARENTDC verbessert die Leistung einer Anwendung.
-    CS_NOCLOSE = &H200           '    Deaktiviert Schließen im Fenstermenü.
-    CS_SAVEBITS = &H800          '    Speichert als Bitmap den Teil des Bildschirmbilds, der von einem Fenster dieser Klasse verdeckt wird. Wenn das Fenster entfernt wird, verwendet das System die gespeicherte Bitmap, um das Bildschirmbild wiederherzustellen, einschließlich anderer verdeckter Fenster. Daher sendet das System keine WM_PAINT Nachrichten an Fenster, die verdeckt wurden, wenn der von der Bitmap verwendete Arbeitsspeicher nicht verworfen wurde und wenn das gespeicherte Bild durch andere Bildschirmaktionen nicht ungültig gemacht wurde. Dieser Stil ist nützlich für kleine Fenster (z. B. Menüs oder Dialogfelder), die kurz angezeigt und dann entfernt werden, bevor andere Bildschirmaktivitäten stattfinden. Durch diese Formatvorlage wird die zum Anzeigen des Fensters erforderliche Zeit erhöht, da das System zunächst Arbeitsspeicher zum Speichern der Bitmap zuweisen muss.
-    CS_BYTEALIGNCLIENT = &H1000  '    Richtet den Clientbereich des Fensters an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
-    CS_BYTEALIGNWINDOW = &H2000  '    Richtet das Fenster an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
-    CS_GLOBALCLASS = &H4000      '    Gibt an, dass die Fensterklasse eine globale Anwendungsklasse ist. Weitere Informationen finden Sie im Abschnitt "Globale Anwendungsklassen" unter Informationen zu Fensterklassen.
-    CS_DROPSHADOW = &H20000      '    Aktiviert den Schlagschatteneffekt für ein Fenster. Der Effekt wird über SPI_SETDROPSHADOW ein- und ausgeschaltet. In der Regel ist dies für kleine, kurzlebige Fenster wie Menüs aktiviert, um ihre Z-Reihenfolge-Beziehung zu anderen Fenstern hervorzuheben. Fenster, die aus einer Klasse mit diesem Stil erstellt werden, müssen Fenster der obersten Ebene sein. Sie dürfen keine Kinderfenster sein.
+    CS_VREDRAW = &H1&             '    Zeichnet das gesamte Fenster neu, wenn eine Bewegung oder Größenanpassung die Höhe des Clientbereichs ändert.
+    CS_HREDRAW = &H2&             '    Zeichnet das gesamte Fenster neu, wenn durch eine Verschiebung oder Größenanpassung die Breite des Clientbereichs geändert wird.
+    CS_DBLCLKS = &H8&             '    Sendet eine Doppelklicknachricht an die Fensterprozedur, wenn der Benutzer mit der Maus doppelklicken, während sich der Cursor in einem Fenster befindet, das zur -Klasse gehört.
+    CS_OWNDC = &H20&              '    Weist jedem Fenster in der -Klasse einen eindeutigen Gerätekontext zu.
+    CS_CLASSDC = &H40&            '    Weist einen Gerätekontext zu, der von allen Fenstern in der -Klasse gemeinsam verwendet werden soll. Da Fensterklassen prozessspezifisch sind, ist es möglich, dass mehrere Threads einer Anwendung ein Fenster derselben Klasse erstellen. Es ist auch möglich, dass die Threads versuchen, den Gerätekontext gleichzeitig zu verwenden. In diesem Fall lässt das System nur einen Thread zu, um den Zeichnungsvorgang erfolgreich abzuschließen.
+    CS_PARENTDC = &H80&           '    Legt das Beschneidungsrechteck des untergeordneten Fensters auf das des übergeordneten Fensters fest, damit das untergeordnete Element auf dem übergeordneten Fenster zeichnen kann. Ein Fenster mit dem CS_PARENTDC Stilbits empfängt einen regulären Gerätekontext aus dem Gerätekontextcache des Systems. Es gibt dem untergeordneten Element nicht die Gerätekontext- oder Gerätekontexteinstellungen des übergeordneten Elements. Die Angabe CS_PARENTDC verbessert die Leistung einer Anwendung.
+    CS_NOCLOSE = &H200&           '    Deaktiviert Schließen im Fenstermenü.
+    CS_SAVEBITS = &H800&          '    Speichert als Bitmap den Teil des Bildschirmbilds, der von einem Fenster dieser Klasse verdeckt wird. Wenn das Fenster entfernt wird, verwendet das System die gespeicherte Bitmap, um das Bildschirmbild wiederherzustellen, einschließlich anderer verdeckter Fenster. Daher sendet das System keine WM_PAINT Nachrichten an Fenster, die verdeckt wurden, wenn der von der Bitmap verwendete Arbeitsspeicher nicht verworfen wurde und wenn das gespeicherte Bild durch andere Bildschirmaktionen nicht ungültig gemacht wurde. Dieser Stil ist nützlich für kleine Fenster (z. B. Menüs oder Dialogfelder), die kurz angezeigt und dann entfernt werden, bevor andere Bildschirmaktivitäten stattfinden. Durch diese Formatvorlage wird die zum Anzeigen des Fensters erforderliche Zeit erhöht, da das System zunächst Arbeitsspeicher zum Speichern der Bitmap zuweisen muss.
+    CS_BYTEALIGNCLIENT = &H1000&  '    Richtet den Clientbereich des Fensters an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
+    CS_BYTEALIGNWINDOW = &H2000&  '    Richtet das Fenster an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
+    CS_GLOBALCLASS = &H4000&      '    Gibt an, dass die Fensterklasse eine globale Anwendungsklasse ist. Weitere Informationen finden Sie im Abschnitt "Globale Anwendungsklassen" unter Informationen zu Fensterklassen.
+    CS_DROPSHADOW = &H20000       '    Aktiviert den Schlagschatteneffekt für ein Fenster. Der Effekt wird über SPI_SETDROPSHADOW ein- und ausgeschaltet. In der Regel ist dies für kleine, kurzlebige Fenster wie Menüs aktiviert, um ihre Z-Reihenfolge-Beziehung zu anderen Fenstern hervorzuheben. Fenster, die aus einer Klasse mit diesem Stil erstellt werden, müssen Fenster der obersten Ebene sein. Sie dürfen keine Kinderfenster sein.
 End Enum
 
-
 Public Enum EWndShowZPos
-    SWP_ASYNCWINDOWPOS = &H4000& '    Wenn der aufrufende Thread und der Thread, der das Fenster besitzt, an verschiedene Eingabewarteschlangen angefügt sind, sendet das System die Anforderung an den Thread, der das Fenster besitzt. Dadurch wird verhindert, dass der aufrufende Thread seine Ausführung blockiert, während andere Threads die Anforderung verarbeiten.
-    SWP_DEFERERASE = &H2000&     '    Verhindert die Generierung der WM_SYNCPAINT Nachricht.
+    SWP_NOSIZE = &H1&            '    Behält die aktuelle Größe bei (ignoriert die Parameter cx und cy ).
+    SWP_NOMOVE = &H2&            '    Behält die aktuelle Position bei (ignoriert die X - und Y-Parameter ).
+    SWP_NOZORDER = &H4&          '    Behält die aktuelle Z-Reihenfolge bei (ignoriert den Parameter hWndInsertAfter ).
+    SWP_NOREDRAW = &H8&          '    Änderungen werden nicht neu gezeichnet. Wenn dieses Flag festgelegt ist, erfolgt keine Neulackierung jeglicher Art. Dies gilt für den Clientbereich, den Nichtclientbereich (einschließlich Titelleiste und Bildlaufleisten) und alle Teile des übergeordneten Fensters, die aufgrund des Verschiebens des Fensters aufgedeckt wurden. Wenn dieses Flag festgelegt ist, muss die Anwendung alle Teile des Fensters und des übergeordneten Fensters, die neu ausgezeichnet werden müssen, explizit für ungültig erklären oder neu zeichnen.
+    SWP_NOACTIVATE = &H10&       '    Aktiviert das Fenster nicht. Wenn dieses Flag nicht festgelegt ist, wird das Fenster aktiviert und an den Anfang der obersten oder nicht obersten Gruppe verschoben (abhängig von der Einstellung des hWndInsertAfter-Parameters ).
     SWP_DRAWFRAME = &H20&        '    Zeichnet einen Rahmen (definiert in der Klassenbeschreibung des Fensters) um das Fenster.
     SWP_FRAMECHANGED = &H20&     '    Wendet mithilfe der SetWindowLong-Funktion neue Frameformatvorlagen an. Sendet eine WM_NCCALCSIZE Nachricht an das Fenster, auch wenn die Größe des Fensters nicht geändert wird. Wenn dieses Flag nicht angegeben ist, wird WM_NCCALCSIZE nur gesendet, wenn die Größe des Fensters geändert wird.
-    SWP_HIDEWINDOW = &H80&       '    Blendet das Fenster aus.
-    SWP_NOACTIVATE = &H10&       '    Aktiviert das Fenster nicht. Wenn dieses Flag nicht festgelegt ist, wird das Fenster aktiviert und an den Anfang der obersten oder nicht obersten Gruppe verschoben (abhängig von der Einstellung des hWndInsertAfter-Parameters ).
-    SWP_NOCOPYBITS = &H100&      '    Verwirft den gesamten Inhalt des Clientbereichs. Wenn dieses Flag nicht angegeben ist, werden die gültigen Inhalte des Clientbereichs gespeichert und wieder in den Clientbereich kopiert, nachdem das Fenster dimensioniert oder neu positioniert wurde.
-    SWP_NOMOVE = &H2&            '    Behält die aktuelle Position bei (ignoriert die X - und Y-Parameter ).
-    SWP_NOOWNERZORDER = &H200&   '    Ändert die Position des Besitzerfensters in der Z-Reihenfolge nicht.
-    SWP_NOREDRAW = &H8&          '    Änderungen werden nicht neu gezeichnet. Wenn dieses Flag festgelegt ist, erfolgt keine Neulackierung jeglicher Art. Dies gilt für den Clientbereich, den Nichtclientbereich (einschließlich Titelleiste und Bildlaufleisten) und alle Teile des übergeordneten Fensters, die aufgrund des Verschiebens des Fensters aufgedeckt wurden. Wenn dieses Flag festgelegt ist, muss die Anwendung alle Teile des Fensters und des übergeordneten Fensters, die neu ausgezeichnet werden müssen, explizit für ungültig erklären oder neu zeichnen.
-    SWP_NOREPOSITION = &H200&    '    Identisch mit dem flag SWP_NOOWNERZORDER .
-    SWP_NOSENDCHANGING = &H400&  '    Verhindert, dass das Fenster die WM_WINDOWPOSCHANGING-Nachricht empfängt.
-    SWP_NOSIZE = &H1&            '    Behält die aktuelle Größe bei (ignoriert die Parameter cx und cy ).
-    SWP_NOZORDER = &H4&          '    Behält die aktuelle Z-Reihenfolge bei (ignoriert den Parameter hWndInsertAfter ).
     SWP_SHOWWINDOW = &H40&       '    Zeigt das Fenster an.
+    SWP_HIDEWINDOW = &H80&       '    Blendet das Fenster aus.
+    SWP_NOCOPYBITS = &H100&      '    Verwirft den gesamten Inhalt des Clientbereichs. Wenn dieses Flag nicht angegeben ist, werden die gültigen Inhalte des Clientbereichs gespeichert und wieder in den Clientbereich kopiert, nachdem das Fenster dimensioniert oder neu positioniert wurde.
+    SWP_NOOWNERZORDER = &H200&   '    Ändert die Position des Besitzerfensters in der Z-Reihenfolge nicht.
+    SWP_NOREPOSITION = &H200&    '    Identisch mit dem flag SWP_NOOWNERZORDER .
+    SWP_ASYNCWINDOWPOS = &H4000& '    Wenn der aufrufende Thread und der Thread, der das Fenster besitzt, an verschiedene Eingabewarteschlangen angefügt sind, sendet das System die Anforderung an den Thread, der das Fenster besitzt. Dadurch wird verhindert, dass der aufrufende Thread seine Ausführung blockiert, während andere Threads die Anforderung verarbeiten.
+    SWP_NOSENDCHANGING = &H400&  '    Verhindert, dass das Fenster die WM_WINDOWPOSCHANGING-Nachricht empfängt.
+    SWP_DEFERERASE = &H2000&     '    Verhindert die Generierung der WM_SYNCPAINT Nachricht.
+End Enum
+
+Public Enum EWndShow
+    SW_HIDE = &H0&              ' Blendet das Fenster aus und aktiviert ein anderes Fenster.
+    SW_SHOWNORMAL = &H1&
+    SW_NORMAL = &H1&            ' Aktiviert und zeigt ein Fenster an. Wenn das Fenster minimiert, maximiert oder angeordnet ist, wird es vom System auf seine ursprüngliche Größe und Position wiederhergestellt. Eine Anwendung sollte dieses Flag angeben, wenn das Fenster zum ersten Mal angezeigt wird.
+    SW_SHOWMINIMIZED = &H2&     ' Aktiviert das Fenster und zeigt es als minimiertes Fenster an.
+    SW_SHOWMAXIMIZED = &H3&
+    SW_MAXIMIZE = &H3&          ' Aktiviert das Fenster und zeigt es als maximiertes Fenster an.
+    SW_SHOWNOACTIVATE = &H4&    ' Zeigt ein Fenster in seiner neuesten Größe und Position an. Dieser Wert ähnelt SW_SHOWNORMAL, mit der Ausnahme, dass das Fenster nicht aktiviert ist.
+    SW_SHOW = &H5&              ' Aktiviert das Fenster und zeigt es in seiner aktuellen Größe und Position an.
+    SW_MINIMIZE = &H6&          ' Minimiert das angegebene Fenster und aktiviert das nächste Fenster der obersten Ebene in der Reihenfolge Z.
+    SW_SHOWMINNOACTIVE = &H7&   ' Zeigt das Fenster als minimiertes Fenster an. Dieser Wert ähnelt SW_SHOWMINIMIZED, außer dass das Fenster nicht aktiviert ist.
+    SW_SHOWNA = &H8&            ' Zeigt das Fenster in seiner aktuellen Größe und Position an. Dieser Wert ähnelt SW_SHOW, mit der Ausnahme, dass das Fenster nicht aktiviert ist.
+    SW_RESTORE = &H9&           ' Aktiviert das Fenster und zeigt es an. Wenn das Fenster minimiert, maximiert oder angeordnet ist, wird es vom System auf seine ursprüngliche Größe und Position wiederhergestellt. Eine Anwendung sollte dieses Flag beim Wiederherstellen eines minimierten Fensters angeben.
+    SW_SHOWDEFAULT = &H10&      ' Legt den Showstatus basierend auf dem SW_ Wert fest, der in der STARTUPINFO-Struktur angegeben ist, die von dem Programm, das die Anwendung gestartet hat, an die CreateProcess-Funktion übergeben wird.
+    SW_FORCEMINIMIZE = &H11&    ' Minimiert ein Fenster, auch wenn der Thread, der das Fenster besitzt, nicht reagiert. Dieses Flag sollte nur verwendet werden, wenn Fenster aus einem anderen Thread minimiert werden.
 End Enum
 
 'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-createstructw
@@ -200,53 +216,74 @@ Private Const HWND_MESSAGE As Long = -3&
 '  [in, optional]  hInstance,
 '  [in, optional]  lpParam
 ');
-'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-createwindowexw
-'HWND CreateWindowExW(
-'  [in]           DWORD     dwExStyle,
-'  [in, optional] LPCWSTR   lpClassName,
-'  [in, optional] LPCWSTR   lpWindowName,
-'  [in]           DWORD     dwStyle,
-'  [in]           int       X,
-'  [in]           int       Y,
-'  [in]           int       nWidth,
-'  [in]           int       nHeight,
-'  [in, optional] HWND      hWndParent,
-'  [in, optional] HMENU     hMenu,
-'  [in, optional] HINSTANCE hInstance,
-'  [in, optional] LPVOID    lpParam
-');
-Private Declare Function CreateWindowExW Lib "user32" ( _
-    ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
-    ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
-    ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
+#If VBA7 Then
+    Private Declare PtrSafe Function CreateWindowExW Lib "user32" ( _
+        ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
+        ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
+        ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
+    
+    Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+    
+    Private Declare PtrSafe Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+    
+    Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal EWndShow As Long) As Long
+    
+    Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+    
+    Private Declare PtrSafe Function GetLastError Lib "kernel32" () As Long
+    
+    Private Declare PtrSafe Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
 
-'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowpos
-Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
-
-'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-movewindow
-'BOOL MoveWindow(
-'  [in] HWND hWnd,
-'  [in] int  X,
-'  [in] int  Y,
-'  [in] int  nWidth,
-'  [in] int  nHeight,
-'  [in] BOOL bRepaint
-');
-Private Declare Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
-
-'https://learn.microsoft.com/de-de/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
-Private Declare Function GetLastError Lib "kernel32" () As Long
-
-'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-'LRESULT Wndproc( HWND unnamedParam1, UINT unnamedParam2, WPARAM unnamedParam3, LPARAM unnamedParam4 )
-
-
-'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-registerclassexw
-'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
-'ATOM RegisterClassExA( [in] const WNDCLASSEXA *unnamedParam1 );
-Private Declare Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
-'https://learn.microsoft.com/de-de/windows/win32/winmsg/using-window-classes
-
+#Else
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-createwindowexw
+    'HWND CreateWindowExW(
+    '  [in]           DWORD     dwExStyle,
+    '  [in, optional] LPCWSTR   lpClassName,
+    '  [in, optional] LPCWSTR   lpWindowName,
+    '  [in]           DWORD     dwStyle,
+    '  [in]           int       X,
+    '  [in]           int       Y,
+    '  [in]           int       nWidth,
+    '  [in]           int       nHeight,
+    '  [in, optional] HWND      hWndParent,
+    '  [in, optional] HMENU     hMenu,
+    '  [in, optional] HINSTANCE hInstance,
+    '  [in, optional] LPVOID    lpParam
+    ');
+    Private Declare Function CreateWindowExW Lib "user32" ( _
+        ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
+        ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
+        ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowpos
+    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-movewindow
+    'BOOL MoveWindow( [in] HWND hWnd, [in] int  X, [in] int  Y, [in] int  nWidth, [in] int  nHeight, [in] BOOL bRepaint );
+    Private Declare Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-showwindow
+    'BOOL ShowWindow( [in] HWND hWnd, [in] int  nCmdShow );
+    Private Declare Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal EWndShow As Long) As Long
+    
+    'BOOL DestroyWindow( [in] HWND hWnd );
+    Private Declare Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
+    
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+    Private Declare Function GetLastError Lib "kernel32" () As Long
+    
+    'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+    'LRESULT Wndproc( HWND unnamedParam1, UINT unnamedParam2, WPARAM unnamedParam3, LPARAM unnamedParam4 )
+    
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-registerclassexw
+    'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
+    'ATOM RegisterClassExA( [in] const WNDCLASSEXA *unnamedParam1 );
+    Private Declare Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
+    'https://learn.microsoft.com/de-de/windows/win32/winmsg/using-window-classes
+#End If
 
 Private m_ClsName As String
 Private m_WndCls  As WNDCLASSEXW
@@ -262,7 +299,7 @@ Private Sub Class_Initialize()
     m_ClsName = "ThunderVB64uWindow" & vbNullChar
     If Not Register Then
         MsgBox "Could not register class: " & m_ClsName
-        Exit Sub
+        'Exit Sub
     End If
     m_Name = "VBForm" & vbNullChar
     With m_Window
@@ -284,13 +321,19 @@ Private Sub Class_Initialize()
     End With
 End Sub
 
+Private Sub Class_Terminate()
+    DestroyWindow m_hWnd
+End Sub
+
 Friend Sub New_(Name As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx)
     m_Name = Name & vbNullChar
     With m_Window
         '.hInstance = App.hInstance
         .lpszName = StrPtr(m_Name)
-        .Style = Style
-        .dwExStyle = StyleEx
+        '.Style = Style
+        '.dwExStyle = StyleEx
+        .Style = WS_OVERLAPPEDWINDOW
+        .dwExStyle = 0
     End With
 End Sub
 
@@ -304,6 +347,9 @@ Private Function Register() As Boolean
     End With
     m_ClsAtom = RegisterClassExW(m_WndCls)
     Register = CBool(m_ClsAtom)
+    If Not Register Then
+        ErrHandler "Register", "m_clsAtom=0"
+    End If
 End Function
 
 Public Sub Load()
@@ -317,6 +363,13 @@ Public Sub Load()
     End With
 '    Exit Sub
 'Catch:
+End Sub
+
+Public Sub Show()
+    If m_hWnd = 0 Then Me.Load
+    If m_hWnd = 0 Then Exit Sub
+    Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_SHOWNORMAL)
+    
 End Sub
 
 Friend Sub OnClick()
@@ -482,5 +535,4 @@ Private Function ErrHandler(ByVal FuncName As String, _
     End If
 
 End Function
-
 

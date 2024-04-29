@@ -29,5 +29,7 @@ Private mForm2 As Window
 Private Sub Command1_Click()
     Set mForm2 = New Window
     mForm2.New_ "Form2"
-    mForm2.Load
+    'mForm2.Load
+    mForm2.Show
 End Sub
+
