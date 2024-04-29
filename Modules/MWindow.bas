@@ -9,7 +9,7 @@ Option Explicit
 
 'LRESULT Wndproc( HWND unnamedParam1, UINT unnamedParam2, WPARAM unnamedParam3, LPARAM unnamedParam4 )
 Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As Long, ByVal wParam3 As LongPtr, ByVal lParam4 As LongPtr) As LongPtr
-    'Debug.Print "WndProc"
+    Debug.Print "WndProc lParam4: " & lParam4 & ", wParam3: " & wParam3
     
     WndProc = DefWindowProcW(hWnd_Param1, uiMsg_Param2, wParam3, lParam4)
     

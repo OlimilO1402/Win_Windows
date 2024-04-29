@@ -234,6 +234,8 @@ Private Const HWND_MESSAGE As Long = -3&
     
     Private Declare PtrSafe Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
 
+    Private Declare PtrSafe Function GetModuleHandleW Lib "kernel32" (ByVal lpModuleName As LongPtr) As LongPtr
+
 #Else
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -283,6 +285,11 @@ Private Const HWND_MESSAGE As Long = -3&
     'ATOM RegisterClassExA( [in] const WNDCLASSEXA *unnamedParam1 );
     Private Declare Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
     'https://learn.microsoft.com/de-de/windows/win32/winmsg/using-window-classes
+
+    'https://learn.microsoft.com/de-de/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlew
+    'HMODULE GetModuleHandleW( [in, optional] LPCWSTR lpModuleName );
+    Private Declare Function GetModuleHandleW Lib "kernel32" (ByVal lpModuleName As LongPtr) As LongPtr
+                 
 #End If
 
 Private m_ClsName As String
@@ -295,10 +302,14 @@ Private m_hWnd    As LongPtr
 Public Event Click()
 Public Event Resize()
 
+Private Function GethInstance() As LongPtr
+    GethInstance = GetModuleHandleW(StrPtr(vbNullString))
+End Function
+
 Private Sub Class_Initialize()
     m_ClsName = "ThunderVB64uWindow" & vbNullChar
     If Not Register Then
-        MsgBox "Could not register class: " & m_ClsName
+        'MsgBox "Could not register class: " & m_ClsName
         'Exit Sub
     End If
     m_Name = "VBForm" & vbNullChar
@@ -309,11 +320,12 @@ Private Sub Class_Initialize()
         .lpszClass = StrPtr(m_ClsName)
         
         .lpszName = StrPtr(m_Name)
-        .hInstance = App.hInstance
-        .Style = WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or _
-                 WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or _
-                 WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
-        .dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+        .hInstance = GethInstance 'App.hInstance
+        .Style = VBFormStyle
+        .dwExStyle = VBFormStyleEx ' WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or _
+        '         WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or _
+        '         WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+        '.dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
         .x = 33
         .y = 26
         .cx = 320 'px VB-default
@@ -328,12 +340,14 @@ End Sub
 Friend Sub New_(Name As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx)
     m_Name = Name & vbNullChar
     With m_Window
-        '.hInstance = App.hInstance
+        .hInstance = GethInstance 'App.hInstance
         .lpszName = StrPtr(m_Name)
-        '.Style = Style
-        '.dwExStyle = StyleEx
-        .Style = WS_OVERLAPPEDWINDOW
-        .dwExStyle = 0
+        .Style = Style
+        .dwExStyle = StyleEx
+        '.Style = WS_OVERLAPPEDWINDOW
+        '.dwExStyle = 0
+        .lpCreateParams = ObjPtr(Me)
+        Debug.Print "ObjPtr(Me) = " & .lpCreateParams
     End With
 End Sub
 
@@ -342,13 +356,14 @@ Private Function Register() As Boolean
         .cbSize = LenB(m_WndCls) '48?
         .lpszClassName = StrPtr(m_ClsName)
         .lpfnWndProc = FncPtr(AddressOf MWindow.WndProc)
-        .hInstance = App.hInstance
+        .hInstance = GethInstance 'App.hInstance
         '.style = CS_VREDRAW Or CS_PARENTDC Or CS_OWNDC Or CS_HREDRAW
+        '.cbClsExtra ?
     End With
     m_ClsAtom = RegisterClassExW(m_WndCls)
     Register = CBool(m_ClsAtom)
     If Not Register Then
-        ErrHandler "Register", "m_clsAtom=0"
+        'ErrHandler "Register", "m_clsAtom=0"
     End If
 End Function
 
@@ -381,8 +396,11 @@ Friend Sub OnResize()
 End Sub
 
 Public Property Get Caption() As String
-    Caption = m_Window.lpszName
+    Caption = m_Name 'm_Window.lpszName
 End Property
+'Public Property Let Caption(ByVal Value As String)
+'    m_Caption = Value
+'End Property
 
 Public Property Get Style() As EWndStyle
     Style = m_Window.Style
@@ -396,52 +414,56 @@ Public Property Get hWnd() As LongPtr
     hWnd = m_hWnd
 End Property
 
-'Public Property Get Caption() As String
-'    Caption = m_Caption
-'End Property
-'Public Property Let Caption(ByVal Value As String)
-'    m_Caption = Value
-'End Property
-
 Public Property Get Left() As Long
-    Left = m_Rect.Left
+    Left = m_Window.x
 End Property
 Public Property Let Left(ByVal Value As Long)
-    m_Rect.Left = Value
+    With m_Window
+        .x = Value
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+    End With
 End Property
 
 Public Property Get Top() As Long
-    Top = m_Rect.Top
+    Top = m_Window.y
 End Property
 Public Property Let Top(ByVal Value As Long)
-    m_Rect.Top = Value
+    With m_Window
+        .y = Value
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+    End With
 End Property
 
 Public Property Get Width() As Long
-    Width = m_Rect.Width
+    Width = m_Window.cx
 End Property
 Public Property Let Width(ByVal Value As Long)
-    m_Rect.Width = Value
+    With m_Window
+        .cx = Value
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+    End With
 End Property
 
 Public Property Get Height() As Long
-    Height = m_Rect.Height
+    Height = m_Window.cy
 End Property
 Public Property Let Height(ByVal Value As Long)
-    m_Rect.Height = Value
+    With m_Window
+        .cy = Value
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+    End With
 End Property
 
 Public Sub Move(ByVal Left As Single, Optional ByVal Top, Optional ByVal Width, Optional ByVal Height)
-    With m_Rect
-        .Left = CLng(Left)
-        If Not IsMissing(Top) Then .Top = CLng(Top)
-        If Not IsMissing(Width) Then .Width = CLng(Width)
-        If Not IsMissing(Height) Then .Height = CLng(Height)
+    With m_Window
+        .x = CLng(Left)
+        If Not IsMissing(Top) Then .y = CLng(Top)
+        If Not IsMissing(Width) Then .cx = CLng(Width)
+        If Not IsMissing(Height) Then .cy = CLng(Height)
         'SetWindowPos m_hWnd, 0&, .Left, .Top, .Width, .Height
-        MoveWindow m_hWnd, .Left, .Top, .Width, .Height
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
     End With
 End Sub
-
 
 Private Function EWndStyle_ToStr(e As EWndStyle) As String
     Dim sOr As String: sOr = " Or "

@@ -9,12 +9,20 @@ Begin VB.Form Form1
    ScaleHeight     =   3015
    ScaleWidth      =   4560
    StartUpPosition =   3  'Windows-Standard
-   Begin VB.CommandButton Command1 
-      Caption         =   "Command1"
-      Height          =   615
-      Left            =   480
+   Begin VB.CommandButton BtnMoveWindow 
+      Caption         =   "Move Window"
+      Height          =   375
+      Left            =   120
+      TabIndex        =   1
+      Top             =   600
+      Width           =   1695
+   End
+   Begin VB.CommandButton BtnCreateWindow 
+      Caption         =   "Create Window"
+      Height          =   375
+      Left            =   120
       TabIndex        =   0
-      Top             =   480
+      Top             =   120
       Width           =   1695
    End
 End
@@ -26,10 +34,12 @@ Attribute VB_Exposed = False
 Option Explicit
 Private mForm2 As Window
 
-Private Sub Command1_Click()
-    Set mForm2 = New Window
-    mForm2.New_ "ThunderVB64uWindow"
-    'mForm2.Load
+Private Sub BtnCreateWindow_Click()
+    Set mForm2 = MNew.Window("ThunderVB64uWindow")
     mForm2.Show
 End Sub
 
+Private Sub BtnMoveWindow_Click()
+    mForm2.Move 100, 100, 800, 600
+    
+End Sub
