@@ -12,6 +12,52 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
+
+Public Enum EClsStyle
+    CS_VREDRAW = &H1&             '    Zeichnet das gesamte Fenster neu, wenn eine Bewegung oder Größenanpassung die Höhe des Clientbereichs ändert.
+    CS_HREDRAW = &H2&             '    Zeichnet das gesamte Fenster neu, wenn durch eine Verschiebung oder Größenanpassung die Breite des Clientbereichs geändert wird.
+    CS_DBLCLKS = &H8&             '    Sendet eine Doppelklicknachricht an die Fensterprozedur, wenn der Benutzer mit der Maus doppelklicken, während sich der Cursor in einem Fenster befindet, das zur -Klasse gehört.
+    CS_OWNDC = &H20&              '    Weist jedem Fenster in der -Klasse einen eindeutigen Gerätekontext zu.
+    CS_CLASSDC = &H40&            '    Weist einen Gerätekontext zu, der von allen Fenstern in der -Klasse gemeinsam verwendet werden soll. Da Fensterklassen prozessspezifisch sind, ist es möglich, dass mehrere Threads einer Anwendung ein Fenster derselben Klasse erstellen. Es ist auch möglich, dass die Threads versuchen, den Gerätekontext gleichzeitig zu verwenden. In diesem Fall lässt das System nur einen Thread zu, um den Zeichnungsvorgang erfolgreich abzuschließen.
+    CS_PARENTDC = &H80&           '    Legt das Beschneidungsrechteck des untergeordneten Fensters auf das des übergeordneten Fensters fest, damit das untergeordnete Element auf dem übergeordneten Fenster zeichnen kann. Ein Fenster mit dem CS_PARENTDC Stilbits empfängt einen regulären Gerätekontext aus dem Gerätekontextcache des Systems. Es gibt dem untergeordneten Element nicht die Gerätekontext- oder Gerätekontexteinstellungen des übergeordneten Elements. Die Angabe CS_PARENTDC verbessert die Leistung einer Anwendung.
+    CS_NOCLOSE = &H200&           '    Deaktiviert Schließen im Fenstermenü.
+    CS_SAVEBITS = &H800&          '    Speichert als Bitmap den Teil des Bildschirmbilds, der von einem Fenster dieser Klasse verdeckt wird. Wenn das Fenster entfernt wird, verwendet das System die gespeicherte Bitmap, um das Bildschirmbild wiederherzustellen, einschließlich anderer verdeckter Fenster. Daher sendet das System keine WM_PAINT Nachrichten an Fenster, die verdeckt wurden, wenn der von der Bitmap verwendete Arbeitsspeicher nicht verworfen wurde und wenn das gespeicherte Bild durch andere Bildschirmaktionen nicht ungültig gemacht wurde. Dieser Stil ist nützlich für kleine Fenster (z. B. Menüs oder Dialogfelder), die kurz angezeigt und dann entfernt werden, bevor andere Bildschirmaktivitäten stattfinden. Durch diese Formatvorlage wird die zum Anzeigen des Fensters erforderliche Zeit erhöht, da das System zunächst Arbeitsspeicher zum Speichern der Bitmap zuweisen muss.
+    CS_BYTEALIGNCLIENT = &H1000&  '    Richtet den Clientbereich des Fensters an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
+    CS_BYTEALIGNWINDOW = &H2000&  '    Richtet das Fenster an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
+    CS_GLOBALCLASS = &H4000&      '    Gibt an, dass die Fensterklasse eine globale Anwendungsklasse ist. Weitere Informationen finden Sie im Abschnitt "Globale Anwendungsklassen" unter Informationen zu Fensterklassen.
+    CS_DROPSHADOW = &H20000       '    Aktiviert den Schlagschatteneffekt für ein Fenster. Der Effekt wird über SPI_SETDROPSHADOW ein- und ausgeschaltet. In der Regel ist dies für kleine, kurzlebige Fenster wie Menüs aktiviert, um ihre Z-Reihenfolge-Beziehung zu anderen Fenstern hervorzuheben. Fenster, die aus einer Klasse mit diesem Stil erstellt werden, müssen Fenster der obersten Ebene sein. Sie dürfen keine Kinderfenster sein.
+End Enum
+
+'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-wndclassexw
+'typedef struct tagWNDCLASSEXW {
+'  UINT      cbSize;
+'  UINT      style;
+'  WNDPROC   lpfnWndProc;
+'  int       cbClsExtra;
+'  int       cbWndExtra;
+'  HINSTANCE hInstance;
+'  HICON     hIcon;
+'  HCURSOR   hCursor;
+'  HBRUSH    hbrBackground;
+'  LPCWSTR   lpszMenuName;
+'  LPCWSTR   lpszClassName;
+'  HICON     hIconSm;
+'} WNDCLASSEXW, *PWNDCLASSEXW, *NPWNDCLASSEXW, *LPWNDCLASSEXW;
+Private Type WNDCLASSEXW
+    cbSize        As Long      'UINT
+    Style         As EClsStyle 'UINT
+    lpfnWndProc   As LongPtr   'WNDPROC
+    cbClsExtra    As Long      'int
+    cbWndExtra    As Long      'int
+    hInstance     As LongPtr   'HINSTANCE
+    hIcon         As LongPtr   'HICON
+    hCursor       As LongPtr   'HCURSOR
+    hbrBackground As LongPtr   'HBRUSH
+    lpszMenuName  As LongPtr   'LPCSTR
+    lpszClassName As LongPtr   'LPCSTR
+    hIconSm       As LongPtr   'HICON
+End Type '} WNDCLASSEXA, *PWNDCLASSEXA, *NPWNDCLASSEXA, *LPWNDCLASSEXA;
+
 'dwStyle
 Public Enum EWndStyle
     WS_TILED = &H0&                 '  Das Fenster ist ein überlappende Fenster. Ein überlappendes Fenster hat eine Titelleiste und einen Rahmen. Identisch mit dem WS_OVERLAPPED Stil.
@@ -87,21 +133,6 @@ Public Enum EWndStyleEx
     VBFormStyleEx = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
 End Enum
 
-Public Enum EClsStyle
-    CS_VREDRAW = &H1&             '    Zeichnet das gesamte Fenster neu, wenn eine Bewegung oder Größenanpassung die Höhe des Clientbereichs ändert.
-    CS_HREDRAW = &H2&             '    Zeichnet das gesamte Fenster neu, wenn durch eine Verschiebung oder Größenanpassung die Breite des Clientbereichs geändert wird.
-    CS_DBLCLKS = &H8&             '    Sendet eine Doppelklicknachricht an die Fensterprozedur, wenn der Benutzer mit der Maus doppelklicken, während sich der Cursor in einem Fenster befindet, das zur -Klasse gehört.
-    CS_OWNDC = &H20&              '    Weist jedem Fenster in der -Klasse einen eindeutigen Gerätekontext zu.
-    CS_CLASSDC = &H40&            '    Weist einen Gerätekontext zu, der von allen Fenstern in der -Klasse gemeinsam verwendet werden soll. Da Fensterklassen prozessspezifisch sind, ist es möglich, dass mehrere Threads einer Anwendung ein Fenster derselben Klasse erstellen. Es ist auch möglich, dass die Threads versuchen, den Gerätekontext gleichzeitig zu verwenden. In diesem Fall lässt das System nur einen Thread zu, um den Zeichnungsvorgang erfolgreich abzuschließen.
-    CS_PARENTDC = &H80&           '    Legt das Beschneidungsrechteck des untergeordneten Fensters auf das des übergeordneten Fensters fest, damit das untergeordnete Element auf dem übergeordneten Fenster zeichnen kann. Ein Fenster mit dem CS_PARENTDC Stilbits empfängt einen regulären Gerätekontext aus dem Gerätekontextcache des Systems. Es gibt dem untergeordneten Element nicht die Gerätekontext- oder Gerätekontexteinstellungen des übergeordneten Elements. Die Angabe CS_PARENTDC verbessert die Leistung einer Anwendung.
-    CS_NOCLOSE = &H200&           '    Deaktiviert Schließen im Fenstermenü.
-    CS_SAVEBITS = &H800&          '    Speichert als Bitmap den Teil des Bildschirmbilds, der von einem Fenster dieser Klasse verdeckt wird. Wenn das Fenster entfernt wird, verwendet das System die gespeicherte Bitmap, um das Bildschirmbild wiederherzustellen, einschließlich anderer verdeckter Fenster. Daher sendet das System keine WM_PAINT Nachrichten an Fenster, die verdeckt wurden, wenn der von der Bitmap verwendete Arbeitsspeicher nicht verworfen wurde und wenn das gespeicherte Bild durch andere Bildschirmaktionen nicht ungültig gemacht wurde. Dieser Stil ist nützlich für kleine Fenster (z. B. Menüs oder Dialogfelder), die kurz angezeigt und dann entfernt werden, bevor andere Bildschirmaktivitäten stattfinden. Durch diese Formatvorlage wird die zum Anzeigen des Fensters erforderliche Zeit erhöht, da das System zunächst Arbeitsspeicher zum Speichern der Bitmap zuweisen muss.
-    CS_BYTEALIGNCLIENT = &H1000&  '    Richtet den Clientbereich des Fensters an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
-    CS_BYTEALIGNWINDOW = &H2000&  '    Richtet das Fenster an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
-    CS_GLOBALCLASS = &H4000&      '    Gibt an, dass die Fensterklasse eine globale Anwendungsklasse ist. Weitere Informationen finden Sie im Abschnitt "Globale Anwendungsklassen" unter Informationen zu Fensterklassen.
-    CS_DROPSHADOW = &H20000       '    Aktiviert den Schlagschatteneffekt für ein Fenster. Der Effekt wird über SPI_SETDROPSHADOW ein- und ausgeschaltet. In der Regel ist dies für kleine, kurzlebige Fenster wie Menüs aktiviert, um ihre Z-Reihenfolge-Beziehung zu anderen Fenstern hervorzuheben. Fenster, die aus einer Klasse mit diesem Stil erstellt werden, müssen Fenster der obersten Ebene sein. Sie dürfen keine Kinderfenster sein.
-End Enum
-
 Public Enum EWndShowZPos
     SWP_NOSIZE = &H1&            '    Behält die aktuelle Größe bei (ignoriert die Parameter cx und cy ).
     SWP_NOMOVE = &H2&            '    Behält die aktuelle Position bei (ignoriert die X - und Y-Parameter ).
@@ -159,43 +190,13 @@ Private Type CREATESTRUCTW
     hwndParent     As LongPtr
     cy             As Long
     cx             As Long
-    y              As Long
-    x              As Long
+    Y              As Long
+    X              As Long
     Style          As EWndStyle
     lpszName       As LongPtr
     lpszClass      As LongPtr
     dwExStyle      As EWndStyleEx
 End Type
-
-'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-wndclassexw
-'typedef struct tagWNDCLASSEXW {
-'  UINT      cbSize;
-'  UINT      style;
-'  WNDPROC   lpfnWndProc;
-'  int       cbClsExtra;
-'  int       cbWndExtra;
-'  HINSTANCE hInstance;
-'  HICON     hIcon;
-'  HCURSOR   hCursor;
-'  HBRUSH    hbrBackground;
-'  LPCWSTR   lpszMenuName;
-'  LPCWSTR   lpszClassName;
-'  HICON     hIconSm;
-'} WNDCLASSEXW, *PWNDCLASSEXW, *NPWNDCLASSEXW, *LPWNDCLASSEXW;
-Private Type WNDCLASSEXW
-  cbSize        As Long      'UINT
-  Style         As EClsStyle 'UINT
-  lpfnWndProc   As LongPtr   'WNDPROC
-  cbClsExtra    As Long      'int
-  cbWndExtra    As Long      'int
-  hInstance     As LongPtr   'HINSTANCE
-  hIcon         As LongPtr   'HICON
-  hCursor       As LongPtr   'HCURSOR
-  hbrBackground As LongPtr   'HBRUSH
-  lpszMenuName  As LongPtr   'LPCSTR
-  lpszClassName As LongPtr   'LPCSTR
-  hIconSm       As LongPtr   'HICON
-End Type '} WNDCLASSEXA, *PWNDCLASSEXA, *NPWNDCLASSEXA, *LPWNDCLASSEXA;
 
 
 'https://www.codeproject.com/Articles/7969/How-to-make-a-Message-Only-Window
@@ -217,6 +218,9 @@ Private Const HWND_MESSAGE As Long = -3&
 '  [in, optional]  lpParam
 ');
 #If VBA7 Then
+    
+    Private Declare PtrSafe Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
+
     Private Declare PtrSafe Function CreateWindowExW Lib "user32" ( _
         ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
         ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
@@ -231,12 +235,18 @@ Private Const HWND_MESSAGE As Long = -3&
     Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
     
     Private Declare PtrSafe Function GetLastError Lib "kernel32" () As Long
-    
-    Private Declare PtrSafe Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
 
     Private Declare PtrSafe Function GetModuleHandleW Lib "kernel32" (ByVal lpModuleName As LongPtr) As LongPtr
 
 #Else
+
+    'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
+    'LRESULT Wndproc( HWND unnamedParam1, UINT unnamedParam2, WPARAM unnamedParam3, LPARAM unnamedParam4 )
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-registerclassexw
+    'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
+    'ATOM RegisterClassExA( [in] const WNDCLASSEXA *unnamedParam1 );
+    Private Declare Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
+    'https://learn.microsoft.com/de-de/windows/win32/winmsg/using-window-classes
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-createwindowexw
     'HWND CreateWindowExW(
@@ -255,15 +265,15 @@ Private Const HWND_MESSAGE As Long = -3&
     ');
     Private Declare Function CreateWindowExW Lib "user32" ( _
         ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
-        ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
+        ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
         ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowpos
-    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-movewindow
     'BOOL MoveWindow( [in] HWND hWnd, [in] int  X, [in] int  Y, [in] int  nWidth, [in] int  nHeight, [in] BOOL bRepaint );
-    Private Declare Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+    Private Declare Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-showwindow
     'BOOL ShowWindow( [in] HWND hWnd, [in] int  nCmdShow );
@@ -276,16 +286,6 @@ Private Const HWND_MESSAGE As Long = -3&
     'https://learn.microsoft.com/de-de/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
     Private Declare Function GetLastError Lib "kernel32" () As Long
     
-    'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
-    'LRESULT Wndproc( HWND unnamedParam1, UINT unnamedParam2, WPARAM unnamedParam3, LPARAM unnamedParam4 )
-    
-    
-    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-registerclassexw
-    'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerclassexw
-    'ATOM RegisterClassExA( [in] const WNDCLASSEXA *unnamedParam1 );
-    Private Declare Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
-    'https://learn.microsoft.com/de-de/windows/win32/winmsg/using-window-classes
-
     'https://learn.microsoft.com/de-de/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlew
     'HMODULE GetModuleHandleW( [in, optional] LPCWSTR lpModuleName );
     Private Declare Function GetModuleHandleW Lib "kernel32" (ByVal lpModuleName As LongPtr) As LongPtr
@@ -294,20 +294,50 @@ Private Const HWND_MESSAGE As Long = -3&
 
 Private m_ClsName As String
 Private m_WndCls  As WNDCLASSEXW
-Private m_ClsAtom As Long
+Private m_ClsAtom As LongPtr
 Private m_Name    As String
 Private m_Window  As CREATESTRUCTW
 Private m_hWnd    As LongPtr
 
+Public Event Activate()
 Public Event Click()
+Public Event DblClick()
+Public Event Deactivate()
+Public Event DragDrop(Source As Control, X As Single, Y As Single)
+Public Event DragOver(Source As Control, X As Single, Y As Single, State As Integer)
+Public Event GotFocus()
+Public Event Initialize()
+Public Event KeyDown(KeyCode As Integer, Shift As Integer)
+Public Event KeyPress(KeyAscii As Integer)
+Public Event KeyUp(KeyCode As Integer, Shift As Integer)
+Public Event LinkClose()
+Public Event LinkError(LinkErr As Integer)
+Public Event LinkExecute(CmdStr As String, Cancel As Integer)
+Public Event LinkOpen(Cancel As Integer)
+Public Event Load()
+Public Event LostFocus()
+Public Event MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Public Event MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Public Event MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Public Event OLECompleteDrag(Effect As Long)
+Public Event OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Public Event OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
+Public Event OLEGiveFeedback(Effect As Long, DefaultCursors As Boolean)
+Public Event OLESetData(Data As DataObject, DataFormat As Integer)
+Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
+Public Event Paint()
+Public Event QueryUnload(Cancel As Integer, UnloadMode As Integer)
 Public Event Resize()
+Public Event Terminate()
+Public Event Unload(Cancel As Integer)
+
 
 Private Function GethInstance() As LongPtr
     GethInstance = GetModuleHandleW(StrPtr(vbNullString))
 End Function
 
 Private Sub Class_Initialize()
-    m_ClsName = "ThunderVB64uWindow" & vbNullChar
+    m_ClsName = "ThunderVB64uWindow" '& vbNullChar
     If Not Register Then
         'MsgBox "Could not register class: " & m_ClsName
         'Exit Sub
@@ -317,7 +347,7 @@ Private Sub Class_Initialize()
         'entweder so
         '.lpszClass = m_ClsAtom
         'oder auch so:
-        .lpszClass = StrPtr(m_ClsName)
+        '.lpszClass = StrPtr(m_ClsName)
         
         .lpszName = StrPtr(m_Name)
         .hInstance = GethInstance 'App.hInstance
@@ -326,8 +356,8 @@ Private Sub Class_Initialize()
         '         WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or _
         '         WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
         '.dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
-        .x = 33
-        .y = 26
+        .X = 33
+        .Y = 26
         .cx = 320 'px VB-default
         .cy = 240 'px VB-default
     End With
@@ -346,31 +376,74 @@ Friend Sub New_(Name As String, Optional ByVal Style As EWndStyle = EWndStyle.VB
         .dwExStyle = StyleEx
         '.Style = WS_OVERLAPPEDWINDOW
         '.dwExStyle = 0
-        .lpCreateParams = ObjPtr(Me)
-        Debug.Print "ObjPtr(Me) = " & .lpCreateParams
+        '.lpCreateParams = ObjPtr(Me)
+        'Debug.Print "ObjPtr(Me) = " & .lpCreateParams
     End With
 End Sub
 
 Private Function Register() As Boolean
+    'preparing the wnd-class-struct
     With m_WndCls
         .cbSize = LenB(m_WndCls) '48?
-        .lpszClassName = StrPtr(m_ClsName)
+        '.lpszClassName = StrPtr(m_ClsName)
+        '.lpszClassName = m_ClsAtom
         .lpfnWndProc = FncPtr(AddressOf MWindow.WndProc)
         .hInstance = GethInstance 'App.hInstance
-        '.style = CS_VREDRAW Or CS_PARENTDC Or CS_OWNDC Or CS_HREDRAW
-        '.cbClsExtra ?
+        '.Style = CS_VREDRAW Or CS_PARENTDC Or CS_OWNDC Or CS_HREDRAW
+        '.cbClsExtra
+        '.cbWndExtra
+        '.hbrBackground
+        '.hCursor
+        '.hIcon
+        '.hIconSm
+        '.lpszMenuName
     End With
+    
+    'first check if already registered
+    Dim ClsName As String: ClsName = m_ClsName
+    If MWindow.Atoms_Contains(ClsName) Then
+        'OK already registered in this process
+        'so we just assign the atom an leave
+        m_ClsAtom = MWindow.Atoms_Item(ClsName)
+        Register = CBool(m_ClsAtom)
+        m_WndCls.lpszClassName = m_ClsAtom
+        Exit Function
+    End If
+    'class not registered until now
+    'so first try to register with the original name
+    ClsName = ClsName & vbNullChar
+    
+    m_WndCls.lpszClassName = StrPtr(ClsName)
     m_ClsAtom = RegisterClassExW(m_WndCls)
     Register = CBool(m_ClsAtom)
-    If Not Register Then
-        'ErrHandler "Register", "m_clsAtom=0"
+    If Register Then
+        MWindow.Atoms_Add m_ClsName, m_ClsAtom
+        Exit Function
     End If
+    'let's try again with an altered name
+    Randomize Timer
+    Dim sr As String: sr = Rnd * 2147483647
+    ClsName = m_ClsName & sr & vbNullChar
+    
+    m_WndCls.lpszClassName = StrPtr(ClsName)
+    m_ClsAtom = RegisterClassExW(m_WndCls)
+    Register = CBool(m_ClsAtom)
+    If Register Then
+        MWindow.Atoms_Add m_ClsName, m_ClsAtom
+        Exit Function
+    End If
+    'we did not succeed
+    ErrHandler "Register", "m_ClsAtom=0"
 End Function
 
 Public Sub Load()
 'Try: On Error GoTo Catch
     With m_Window
-        m_hWnd = CreateWindowExW(.dwExStyle, .lpszClass, .lpszName, .Style, .x, .y, .cx, .cy, .hwndParent, .hMenu, .hInstance, ByVal .lpCreateParams)
+        .lpszClass = m_ClsAtom
+        m_hWnd = CreateWindowExW(.dwExStyle, .lpszClass, .lpszName, .Style, .X, .Y, .cx, .cy, .hwndParent, .hMenu, .hInstance, ByVal .lpCreateParams)
+        'Debug.Print "Windows_Add"
+        MWindow.Windows_Add m_hWnd, Me
+        'MWindow.WindowAdded = True
         If m_hWnd = 0 Then
             'GoTo Catch
             ErrHandler "Load", "hWnd = 0"
@@ -385,14 +458,6 @@ Public Sub Show()
     If m_hWnd = 0 Then Exit Sub
     Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_SHOWNORMAL)
     
-End Sub
-
-Friend Sub OnClick()
-    RaiseEvent Click
-End Sub
-
-Friend Sub OnResize()
-    RaiseEvent Resize
 End Sub
 
 Public Property Get Caption() As String
@@ -415,22 +480,22 @@ Public Property Get hWnd() As LongPtr
 End Property
 
 Public Property Get Left() As Long
-    Left = m_Window.x
+    Left = m_Window.X
 End Property
 Public Property Let Left(ByVal Value As Long)
     With m_Window
-        .x = Value
-        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+        .X = Value
+        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
 Public Property Get Top() As Long
-    Top = m_Window.y
+    Top = m_Window.Y
 End Property
 Public Property Let Top(ByVal Value As Long)
     With m_Window
-        .y = Value
-        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+        .Y = Value
+        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
@@ -440,7 +505,7 @@ End Property
 Public Property Let Width(ByVal Value As Long)
     With m_Window
         .cx = Value
-        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
@@ -450,20 +515,53 @@ End Property
 Public Property Let Height(ByVal Value As Long)
     With m_Window
         .cy = Value
-        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
 Public Sub Move(ByVal Left As Single, Optional ByVal Top, Optional ByVal Width, Optional ByVal Height)
     With m_Window
-        .x = CLng(Left)
-        If Not IsMissing(Top) Then .y = CLng(Top)
+        .X = CLng(Left)
+        If Not IsMissing(Top) Then .Y = CLng(Top)
         If Not IsMissing(Width) Then .cx = CLng(Width)
         If Not IsMissing(Height) Then .cy = CLng(Height)
         'SetWindowPos m_hWnd, 0&, .Left, .Top, .Width, .Height
-        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
+        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Sub
+
+Public Sub OnActivate():                                                               RaiseEvent Activate:                                                                                                      End Sub
+Public Sub OnClick():                                                                  RaiseEvent Click:                                                                                                         End Sub
+Public Sub OnDblClick():                                                               RaiseEvent DblClick:                                                                                                      End Sub
+Public Sub OnDeactivate():                                                             RaiseEvent Deactivate:                                                                                                    End Sub
+Public Sub OnDragDrop(Source As Control, X As Single, Y As Single):                    RaiseEvent DragDrop(Source, X, Y):                                                                                        End Sub
+Public Sub OnDragOver(Source As Control, X As Single, Y As Single, State As Integer):  RaiseEvent DragOver(Source, X, Y, State):                                                                                 End Sub
+Public Sub OnGotFocus():                                                               RaiseEvent GotFocus:                                                                                                      End Sub
+Public Sub OnInitialize():                                                             RaiseEvent Initialize:                                                                                                    End Sub
+Public Sub OnKeyDown(KeyCode As Integer, Shift As Integer):                            RaiseEvent KeyDown(KeyCode, Shift):                                                                                       End Sub
+Public Sub OnKeyPress(KeyAscii As Integer):                                            RaiseEvent KeyPress(KeyAscii):                                                                                            End Sub
+Public Sub OnKeyUp(KeyCode As Integer, Shift As Integer):                              RaiseEvent KeyUp(KeyCode, Shift):                                                                                         End Sub
+Public Sub OnLinkClose():                                                              RaiseEvent LinkClose:                                                                                                     End Sub
+Public Sub OnLinkError(LinkErr As Integer):                                            RaiseEvent LinkError(LinkErr):                                                                                            End Sub
+Public Sub OnLinkExecute(CmdStr As String, Cancel As Integer):                         RaiseEvent LinkExecute(CmdStr, Cancel):                                                                                   End Sub
+Public Sub OnLinkOpen(Cancel As Integer):                                              RaiseEvent LinkOpen(Cancel):                                                                                              End Sub
+Public Sub OnLoad():                                                                   RaiseEvent Load:                                                                                                          End Sub
+Public Sub OnLostFocus():                                                              RaiseEvent LostFocus:                                                                                                     End Sub
+Public Sub OnMouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseDown(Button, Shift, X, Y):                                                                                End Sub
+Public Sub OnMouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseMove(Button, Shift, X, Y):                                                                                End Sub
+Public Sub OnMouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single):   RaiseEvent MouseUp(Button, Shift, X, Y):                                                                                  End Sub
+Public Sub OnOLECompleteDrag(Effect As Long):                                          RaiseEvent OLECompleteDrag(Effect):                                                                                       End Sub
+Public Sub OnOLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single):                   RaiseEvent OLEDragDrop(Data, Effect, Button, Shift, X, Y):        End Sub
+Public Sub OnOLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer): RaiseEvent OLEDragOver(Data, Effect, Button, Shift, X, Y, State): End Sub
+Public Sub OnOLEGiveFeedback(Effect As Long, DefaultCursors As Boolean):               RaiseEvent OLEGiveFeedback(Effect, DefaultCursors):                                                                       End Sub
+Public Sub OnOLESetData(Data As DataObject, DataFormat As Integer):                    RaiseEvent OLESetData(Data, DataFormat):                                                                                  End Sub
+Public Sub OnOLEStartDrag(Data As DataObject, AllowedEffects As Long):                 RaiseEvent OLEStartDrag(Data, AllowedEffects):                                                                            End Sub
+Public Sub OnPaint():                                                                  RaiseEvent Paint:                                                                                                         End Sub
+Public Sub OnQueryUnload(Cancel As Integer, UnloadMode As Integer):                    RaiseEvent QueryUnload(Cancel, UnloadMode):                                                                               End Sub
+Public Sub OnResize():                                                                 RaiseEvent Resize:                                                                                                        End Sub
+Public Sub OnTerminate():                                                              RaiseEvent Terminate:                                                                                                     End Sub
+Public Sub OnUnload(Cancel As Integer):                                                RaiseEvent Unload(Cancel):                                                                                                End Sub
+
 
 Private Function EWndStyle_ToStr(e As EWndStyle) As String
     Dim sOr As String: sOr = " Or "
