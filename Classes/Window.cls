@@ -298,6 +298,7 @@ Private m_ClsAtom As LongPtr
 Private m_Name    As String
 Private m_Window  As CREATESTRUCTW
 Private m_hWnd    As LongPtr
+Private m_Tag     As Variant
 
 Public Event Activate()
 Public Event Click()
@@ -453,16 +454,193 @@ Public Sub Load()
 'Catch:
 End Sub
 
-Public Sub Show()
+'Public Sub Show(Optional Modal As FormShowConstants, Optional OwnerForm As Object): End Sub
+Public Sub Show(Optional Modal As FormShowConstants, Optional OwnerForm As Object)
     If m_hWnd = 0 Then Me.Load
     If m_hWnd = 0 Then Exit Sub
     Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_SHOWNORMAL)
     
 End Sub
 
-Public Property Get Caption() As String
-    Caption = m_Name 'm_Window.lpszName
+' v ############################## v '    OM TODO:    ' v ############################## v '
+Public Property Get ActiveControl() As Control:                End Property
+Public Property Get Appearance() As Integer:                   End Property
+Public Property Let Appearance(ByVal Value As Integer):        End Property
+Public Property Get AutoRedraw() As Boolean:                   End Property
+Public Property Let AutoRedraw(ByVal Value As Boolean):        End Property
+Public Property Get BackColor() As Long:                       End Property
+Public Property Let BackColor(ByVal Value As Long):            End Property
+Public Property Get BorderStyle() As FormBorderStyleConstants: End Property
+Public Property Let BorderStyle(ByVal Value As FormBorderStyleConstants): End Property
+Public Property Get Caption() As String:                       End Property
+Public Sub CCircle():                                          End Sub
+Public Property Get ClipControls() As Boolean:                 End Property
+Public Sub Cls():                                              End Sub
+Public Property Get ControlBox() As Boolean:                   End Property
+Public Property Get Controls() As Object:                      End Property
+Public Property Get Count() As Integer:                        End Property
+Public Property Get CurrentX() As Single:                      End Property
+Public Property Get CurrentY() As Single:                      End Property
+Public Property Get DrawMode() As DrawModeConstants:           End Property
+Public Property Get DrawStyle() As DrawStyleConstants:         End Property
+Public Property Get DrawWidth() As Integer:                    End Property
+Public Property Get Enabled() As Boolean:                      End Property
+Public Property Get FillColor() As Long:                       End Property
+Public Property Get FillStyle() As FillStyleConstants:         End Property
+Public Property Get Font() As StdFont:                         End Property
+Public Property Get FontBold() As Boolean:                     End Property
+Public Property Get FontItalic() As Boolean:                   End Property
+Public Property Get FontName() As String:                      End Property
+Public Property Get FontSize() As Single:                      End Property
+Public Property Get FontStrikethru() As Boolean:               End Property
+Public Property Get FontTransparent() As Boolean:              End Property
+Public Property Get FontUnderline() As Boolean:                End Property
+Public Property Get ForeColor() As Long:                       End Property
+Public Property Get HasDC() As Boolean:                        End Property
+Public Property Get hDC() As LongPtr:                          End Property
+'Public Property Get Height() As Single : End Property
+Public Property Get HelpContextID() As Long: End Property
+
+Public Sub Hide()
+    'Mitglied von VB.Form
+    'Blendet ein MDIForm- oder Form-Objekt aus, ohne es zu entladen.
+    Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_HIDE)
+End Sub
+
+'Public Property Get hWnd() As LongPtr: End Property
+Public Property Get Icon() As IPictureDisp:  End Property
+Public Property Get Image() As IPictureDisp: End Property
+Public Property Get KeyPreview() As Boolean: End Property
+'Public Property Get Left() As Single : End Property
+Public Sub Line(): End Sub
+Public Property Get LinkMode() As Integer: End Property
+Public Property Get LinkTopic() As String: End Property
+Public Property Get MaxButton() As Boolean: End Property
+Public Property Get MDIChild() As Boolean: End Property
+Public Property Get MinButton() As Boolean: End Property
+Public Property Get MouseIcon() As IPictureDisp: End Property
+Public Property Get MousePointer() As Integer: End Property
+'Public Sub Move(): End Sub
+Public Property Get Moveable() As Boolean: End Property
+Public Property Get Name() As String: End Property
+Public Sub OLEDrag(): End Sub
+Public Property Get OLEDropMode() As Integer: End Property
+Public Sub PaintPicture(): End Sub
+Public Property Get Palette() As IPictureDisp: End Property
+Public Property Get PaletteMode() As Integer: End Property
+Public Property Get Picture() As IPictureDisp: End Property
+Public Function Point(X As Single, Y As Single) As Long: End Function
+Public Sub PopupMenu(Menu As Object, Optional Flags, Optional X, Optional Y, Optional DefaultMenu): End Sub
+Public Sub PrintForm(): End Sub
+Public Sub PPSet(Step As Integer, X As Single, Y As Single, Color As Long): End Sub
+Public Sub Refresh(): End Sub
+Public Property Get RightToLeft() As Boolean: End Property
+Public Sub SScale(): End Sub
+Public Property Get ScaleHeight() As Single: End Property
+Public Property Get ScaleLeft() As Single: End Property
+Public Property Get ScaleMode() As Integer: End Property
+Public Property Get ScaleTop() As Single: End Property
+Public Property Get ScaleWidth() As Single: End Property
+Public Function ScaleX(Width As Single, Optional FromScale, Optional ToScale) As Single: End Function
+Public Function ScaleY(Height As Single, Optional FromScale, Optional ToScale): End Function
+Public Sub SetFocus(): End Sub
+
+
+'Public Sub Show(Optional Modal As FormShowConstants, Optional OwnerForm As Object): End Property
+Public Property Get ShowInTaskbar() As Boolean
+    'schreibgeschützt
+    'Mitglied von VB.Form
+    'Bestimmt, ob ein Formular oder ein MDI-Formular in der Task-Leiste von Windows 95 angezeigt wird.
 End Property
+Public Property Let ShowInTaskbar(ByVal Value As Boolean)
+    '
+End Property
+
+Public Property Get StartUpPosition() As Integer
+    'schreibgeschützt
+    'Mitglied von VB.Form
+    'Gibt einen Wert zurück oder legt einen Wert fest, der die Position eines Formulars angibt, wenn es zum ersten Mal angezeigt wird.
+End Property
+Public Property Let StartUpPosition(ByVal Value As Integer)
+    '
+End Property
+
+Public Property Get Tag() As Variant
+    'Mitglied von VB.Form
+    'Speichert alle zusätzlichen Daten, die Sie für Ihr Programm benötigen.
+    Tag = m_Tag
+End Property
+Public Property Let Tag(ByVal Value As Variant)
+     m_Tag = Value
+End Property
+Public Property Set Tag(ByVal Value As Variant)
+     Set m_Tag = Value
+End Property
+
+Public Function TextHeight(Str As String) As Single
+    'Mitglied von VB.Form
+    'Gibt zurück, mit welcher Höhe eine Zeichenfolge in der aktuellen Schriftart ausgegeben würde.
+End Function
+
+Public Function TextWidth(Str As String) As Single
+    'Mitglied von VB.Form
+    'Gibt zurück, mit welcher Breite eine Zeichenfolge in der aktuellen Schriftart ausgegeben würde.
+End Function
+
+'Public Property Get Top() As Single: End Property
+
+Public Sub ValidateControls()
+    'Mitglied von VB.Form
+    'Überprüfen Sie den Inhalt des letzten Steuerelements auf dem Formular, bevor Sie das Formular verlassen.
+End Sub
+
+Public Property Get Visible() As Boolean
+    'Mitglied von VB.Form
+    'Gibt einen Wert zurück, der bestimmt, ob ein Objekt sichtbar oder versteckt ist, oder legt diesen fest.
+End Property
+Public Property Let Visible(ByVal Value As Boolean)
+    '
+End Property
+
+Public Property Get WhatsThisButton() As Boolean
+    'schreibgeschützt
+    'Mitglied von VB.Form
+    'Gibt zurück oder legt fest, ob die Schaltfläche "Direkthilfe" in der Titelleiste eines Formulars oder MDI-Formulars angezeigt wird.
+End Property
+Public Property Get WhatsThisHelp() As Boolean
+    'schreibgeschützt
+    'Mitglied von VB.Form
+    'Gibt zurück oder legt fest, ob für die kontextbezogene Hilfe das von der Windows 95-Hilfe
+    'bereitgestellte Direkthilfe-Popup oder das Hilfe-Hauptfenster verwendet wird.
+End Property
+
+Public Sub WhatsThisMode()
+    'Bereitet die Anwendung so vor, daß eine Direkthilfe für das ausgewählte Objekt angezeigt wird.
+    
+End Sub
+
+'Public Property Get Width() As Single: End Property
+
+Public Property Get WindowState() As FormWindowStateConstants
+    'Mitglied von VB.Form
+    'Gibt den Anzeigezustand eines Formularfensters zur Laufzeit zurück oder legt diesen fest.
+End Property
+Public Property Let WindowState(ByVal Value As FormWindowStateConstants)
+    '
+End Property
+' ^ ############################## ^ '    OM TODO:    ' ^ ############################## ^ '
+
+Public Sub ZOrder(Optional Position)
+    'Legt ein angegebenes Objekt an der ersten oder letzten Stelle der Z-Reihenfolge innerhalb der zugehörigen Grafikstufe ab.
+    'EWndShowZPos ? ?
+    With m_Window
+        SetWindowPos m_hWnd, 0&, .X, .Y, .cx, .cy, CLng(Position)
+    End With
+End Sub
+
+'Public Property Get Caption() As String
+'    Caption = m_Name 'm_Window.lpszName
+'End Property
 'Public Property Let Caption(ByVal Value As String)
 '    m_Caption = Value
 'End Property
@@ -479,40 +657,40 @@ Public Property Get hWnd() As LongPtr
     hWnd = m_hWnd
 End Property
 
-Public Property Get Left() As Long
+Public Property Get Left() As Single
     Left = m_Window.X
 End Property
-Public Property Let Left(ByVal Value As Long)
+Public Property Let Left(ByVal Value As Single)
     With m_Window
         .X = Value
         MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
-Public Property Get Top() As Long
+Public Property Get Top() As Single
     Top = m_Window.Y
 End Property
-Public Property Let Top(ByVal Value As Long)
+Public Property Let Top(ByVal Value As Single)
     With m_Window
         .Y = Value
         MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
-Public Property Get Width() As Long
+Public Property Get Width() As Single
     Width = m_Window.cx
 End Property
-Public Property Let Width(ByVal Value As Long)
+Public Property Let Width(ByVal Value As Single)
     With m_Window
         .cx = Value
         MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
     End With
 End Property
 
-Public Property Get Height() As Long
+Public Property Get Height() As Single
     Height = m_Window.cy
 End Property
-Public Property Let Height(ByVal Value As Long)
+Public Property Let Height(ByVal Value As Single)
     With m_Window
         .cy = Value
         MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
@@ -530,38 +708,37 @@ Public Sub Move(ByVal Left As Single, Optional ByVal Top, Optional ByVal Width, 
     End With
 End Sub
 
-Public Sub OnActivate():                                                               RaiseEvent Activate:                                                                                                      End Sub
-Public Sub OnClick():                                                                  RaiseEvent Click:                                                                                                         End Sub
-Public Sub OnDblClick():                                                               RaiseEvent DblClick:                                                                                                      End Sub
-Public Sub OnDeactivate():                                                             RaiseEvent Deactivate:                                                                                                    End Sub
-Public Sub OnDragDrop(Source As Control, X As Single, Y As Single):                    RaiseEvent DragDrop(Source, X, Y):                                                                                        End Sub
-Public Sub OnDragOver(Source As Control, X As Single, Y As Single, State As Integer):  RaiseEvent DragOver(Source, X, Y, State):                                                                                 End Sub
-Public Sub OnGotFocus():                                                               RaiseEvent GotFocus:                                                                                                      End Sub
-Public Sub OnInitialize():                                                             RaiseEvent Initialize:                                                                                                    End Sub
-Public Sub OnKeyDown(KeyCode As Integer, Shift As Integer):                            RaiseEvent KeyDown(KeyCode, Shift):                                                                                       End Sub
-Public Sub OnKeyPress(KeyAscii As Integer):                                            RaiseEvent KeyPress(KeyAscii):                                                                                            End Sub
-Public Sub OnKeyUp(KeyCode As Integer, Shift As Integer):                              RaiseEvent KeyUp(KeyCode, Shift):                                                                                         End Sub
-Public Sub OnLinkClose():                                                              RaiseEvent LinkClose:                                                                                                     End Sub
-Public Sub OnLinkError(LinkErr As Integer):                                            RaiseEvent LinkError(LinkErr):                                                                                            End Sub
-Public Sub OnLinkExecute(CmdStr As String, Cancel As Integer):                         RaiseEvent LinkExecute(CmdStr, Cancel):                                                                                   End Sub
-Public Sub OnLinkOpen(Cancel As Integer):                                              RaiseEvent LinkOpen(Cancel):                                                                                              End Sub
-Public Sub OnLoad():                                                                   RaiseEvent Load:                                                                                                          End Sub
-Public Sub OnLostFocus():                                                              RaiseEvent LostFocus:                                                                                                     End Sub
-Public Sub OnMouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseDown(Button, Shift, X, Y):                                                                                End Sub
-Public Sub OnMouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseMove(Button, Shift, X, Y):                                                                                End Sub
-Public Sub OnMouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single):   RaiseEvent MouseUp(Button, Shift, X, Y):                                                                                  End Sub
-Public Sub OnOLECompleteDrag(Effect As Long):                                          RaiseEvent OLECompleteDrag(Effect):                                                                                       End Sub
-Public Sub OnOLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single):                   RaiseEvent OLEDragDrop(Data, Effect, Button, Shift, X, Y):        End Sub
-Public Sub OnOLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer): RaiseEvent OLEDragOver(Data, Effect, Button, Shift, X, Y, State): End Sub
-Public Sub OnOLEGiveFeedback(Effect As Long, DefaultCursors As Boolean):               RaiseEvent OLEGiveFeedback(Effect, DefaultCursors):                                                                       End Sub
-Public Sub OnOLESetData(Data As DataObject, DataFormat As Integer):                    RaiseEvent OLESetData(Data, DataFormat):                                                                                  End Sub
-Public Sub OnOLEStartDrag(Data As DataObject, AllowedEffects As Long):                 RaiseEvent OLEStartDrag(Data, AllowedEffects):                                                                            End Sub
-Public Sub OnPaint():                                                                  RaiseEvent Paint:                                                                                                         End Sub
-Public Sub OnQueryUnload(Cancel As Integer, UnloadMode As Integer):                    RaiseEvent QueryUnload(Cancel, UnloadMode):                                                                               End Sub
-Public Sub OnResize():                                                                 RaiseEvent Resize:                                                                                                        End Sub
-Public Sub OnTerminate():                                                              RaiseEvent Terminate:                                                                                                     End Sub
-Public Sub OnUnload(Cancel As Integer):                                                RaiseEvent Unload(Cancel):                                                                                                End Sub
-
+Friend Sub OnActivate():                                                               RaiseEvent Activate:                                                                                                      End Sub
+Friend Sub OnClick():                                                                  RaiseEvent Click:                                                                                                         End Sub
+Friend Sub OnDblClick():                                                               RaiseEvent DblClick:                                                                                                      End Sub
+Friend Sub OnDeactivate():                                                             RaiseEvent Deactivate:                                                                                                    End Sub
+Friend Sub OnDragDrop(Source As Control, X As Single, Y As Single):                    RaiseEvent DragDrop(Source, X, Y):                                                                                        End Sub
+Friend Sub OnDragOver(Source As Control, X As Single, Y As Single, State As Integer):  RaiseEvent DragOver(Source, X, Y, State):                                                                                 End Sub
+Friend Sub OnGotFocus():                                                               RaiseEvent GotFocus:                                                                                                      End Sub
+Friend Sub OnInitialize():                                                             RaiseEvent Initialize:                                                                                                    End Sub
+Friend Sub OnKeyDown(KeyCode As Integer, Shift As Integer):                            RaiseEvent KeyDown(KeyCode, Shift):                                                                                       End Sub
+Friend Sub OnKeyPress(KeyAscii As Integer):                                            RaiseEvent KeyPress(KeyAscii):                                                                                            End Sub
+Friend Sub OnKeyUp(KeyCode As Integer, Shift As Integer):                              RaiseEvent KeyUp(KeyCode, Shift):                                                                                         End Sub
+Friend Sub OnLinkClose():                                                              RaiseEvent LinkClose:                                                                                                     End Sub
+Friend Sub OnLinkError(LinkErr As Integer):                                            RaiseEvent LinkError(LinkErr):                                                                                            End Sub
+Friend Sub OnLinkExecute(CmdStr As String, Cancel As Integer):                         RaiseEvent LinkExecute(CmdStr, Cancel):                                                                                   End Sub
+Friend Sub OnLinkOpen(Cancel As Integer):                                              RaiseEvent LinkOpen(Cancel):                                                                                              End Sub
+Friend Sub OnLoad():                                                                   RaiseEvent Load:                                                                                                          End Sub
+Friend Sub OnLostFocus():                                                              RaiseEvent LostFocus:                                                                                                     End Sub
+Friend Sub OnMouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseDown(Button, Shift, X, Y):                                                                                End Sub
+Friend Sub OnMouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseMove(Button, Shift, X, Y):                                                                                End Sub
+Friend Sub OnMouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single):   RaiseEvent MouseUp(Button, Shift, X, Y):                                                                                  End Sub
+Friend Sub OnOLECompleteDrag(Effect As Long):                                          RaiseEvent OLECompleteDrag(Effect):                                                                                       End Sub
+Friend Sub OnOLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single):                   RaiseEvent OLEDragDrop(Data, Effect, Button, Shift, X, Y):        End Sub
+Friend Sub OnOLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer): RaiseEvent OLEDragOver(Data, Effect, Button, Shift, X, Y, State): End Sub
+Friend Sub OnOLEGiveFeedback(Effect As Long, DefaultCursors As Boolean):               RaiseEvent OLEGiveFeedback(Effect, DefaultCursors):                                                                       End Sub
+Friend Sub OnOLESetData(Data As DataObject, DataFormat As Integer):                    RaiseEvent OLESetData(Data, DataFormat):                                                                                  End Sub
+Friend Sub OnOLEStartDrag(Data As DataObject, AllowedEffects As Long):                 RaiseEvent OLEStartDrag(Data, AllowedEffects):                                                                            End Sub
+Friend Sub OnPaint():                                                                  RaiseEvent Paint:                                                                                                         End Sub
+Friend Sub OnQueryUnload(Cancel As Integer, UnloadMode As Integer):                    RaiseEvent QueryUnload(Cancel, UnloadMode):                                                                               End Sub
+Friend Sub OnResize():                                                                 RaiseEvent Resize:                                                                                                        End Sub
+Friend Sub OnTerminate():                                                              RaiseEvent Terminate:                                                                                                     End Sub
+Friend Sub OnUnload(Cancel As Integer):                                                RaiseEvent Unload(Cancel):                                                                                                End Sub
 
 Private Function EWndStyle_ToStr(e As EWndStyle) As String
     Dim sOr As String: sOr = " Or "

@@ -25,6 +25,14 @@ Begin VB.Form Form1
       Top             =   120
       Width           =   1695
    End
+   Begin VB.Label Label1 
+      Caption         =   "Label1"
+      Height          =   615
+      Left            =   120
+      TabIndex        =   2
+      Top             =   1200
+      Width           =   3375
+   End
 End
 Attribute VB_Name = "Form1"
 Attribute VB_GlobalNameSpace = False
@@ -32,139 +40,30 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Private mForm2 As Window
+Private WithEvents mForm2 As Window
+Attribute mForm2.VB_VarHelpID = -1
 
 Private Sub BtnCreateWindow_Click()
-    Set mForm2 = MNew.Window("ThunderVB64uWindow")
+    Set mForm2 = MNew.Window("Form2")
     mForm2.Load
     'mForm2.Show
 End Sub
 
 Private Sub BtnMoveWindow_Click()
     mForm2.Move 100, 100, 800, 600
-    
 End Sub
 
-Private Sub Form_Activate()
-    '
+Private Sub mForm2_Activate()
+    Label1.Caption = "Form2_Activate"
+    DoEvents
 End Sub
 
-Private Sub Form_Click()
-    '
+Private Sub mForm2_Deactivate()
+    Label1.Caption = "Form2_Deactivate"
+    DoEvents
 End Sub
 
-Private Sub Form_DblClick()
-    '
-End Sub
-
-Private Sub Form_Deactivate()
-    '
-End Sub
-
-Private Sub Form_DragDrop(Source As Control, X As Single, Y As Single)
-    '
-End Sub
-
-Private Sub Form_DragOver(Source As Control, X As Single, Y As Single, State As Integer)
-    '
-End Sub
-
-Private Sub Form_GotFocus()
-    '
-End Sub
-
-Private Sub Form_Initialize()
-    '
-End Sub
-
-Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
-    '
-End Sub
-
-Private Sub Form_KeyPress(KeyAscii As Integer)
-    '
-End Sub
-
-Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
-    '
-End Sub
-
-Private Sub Form_LinkClose()
-    '
-End Sub
-
-Private Sub Form_LinkError(LinkErr As Integer)
-    '
-End Sub
-
-Private Sub Form_LinkExecute(CmdStr As String, Cancel As Integer)
-    '
-End Sub
-
-Private Sub Form_LinkOpen(Cancel As Integer)
-    '
-End Sub
-
-Private Sub Form_Load()
-    '
-End Sub
-
-Private Sub Form_LostFocus()
-    '
-End Sub
-
-Private Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    '
-End Sub
-
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    '
-End Sub
-
-Private Sub Form_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    '
-End Sub
-
-Private Sub Form_OLECompleteDrag(Effect As Long)
-    '
-End Sub
-
-Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
-    '
-End Sub
-
-Private Sub Form_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
-    '
-End Sub
-
-Private Sub Form_OLEGiveFeedback(Effect As Long, DefaultCursors As Boolean)
-    '
-End Sub
-
-Private Sub Form_OLESetData(Data As DataObject, DataFormat As Integer)
-    '
-End Sub
-
-Private Sub Form_OLEStartDrag(Data As DataObject, AllowedEffects As Long)
-    '
-End Sub
-
-Private Sub Form_Paint()
-    '
-End Sub
-
-Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
-    '
-End Sub
-
-Private Sub Form_Resize()
-    '
-End Sub
-
-Private Sub Form_Terminate()
-    '
-End Sub
-
-Private Sub Form_Unload(Cancel As Integer)
-    '
+Private Sub mForm2_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    'Label1.Caption = "Button: " & Button & " Shift: " & Shift & " X: " & X & " Y: " & Y
+    'DoEvents
 End Sub

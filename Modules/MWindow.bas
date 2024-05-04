@@ -233,11 +233,24 @@ Public Enum EWinMsg
     WM_APP = &H8000&                           ' 32768
 End Enum
 
+
+Private Const WA_INACTIVE    As Long = 0 '    Deaktiviert.
+Private Const WA_ACTIVE      As Long = 1 '    Aktiviert durch eine andere Methode als einen Mausklick (z. B. durch einen Aufruf der SetActiveWindow-Funktion oder durch Die Verwendung der Tastaturschnittstelle zum Auswählen des Fensters).
+Private Const WA_CLICKACTIVE As Long = 2 '    Durch Einen Mausklick aktiviert.
+
+    
+
 #If VBA7 Then
+    
+    'Private Declare PtrSafe Function TranslateMessage Lib "user32" (lpMsg As MSG) As Long
     
     Private Declare PtrSafe Function DefWindowProcW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
     
 #Else
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-translatemessage
+    'BOOL TranslateMessage( [in] const MSG *lpMsg )
+    'Private Declare Function TranslateMessage Lib "user32" (lpMsg As MSG) As Long
+    
     'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw
     Private Declare Function DefWindowProcW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
        
@@ -303,12 +316,71 @@ Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As EWin
 '    End If
     Dim Window As Window: Set Window = m_Windows.Item(CStr(hWnd_Param1))
     'Debug.Print WindowMessage_ToStr(uiMsg_Param2)
+    Dim Cancel As Integer
     Select Case uiMsg_Param2
+    Case WM_ACTIVATE:
+        'Debug.Print "wparam3: " & wParam3 & " " & (wParam3 And &HFFFF)
+                           If (wParam3 And &HFFFF) = WA_INACTIVE Then Window.OnDeactivate Else Window.OnActivate
+    'Case WM_MOUSEACTIVATE: 'If (wParam3 And &HFFFF) = WA_INACTIVE Then Window.OnDeactivate Else
+    '                        Window.OnActivate
+    Case WM_CREATE:         Window.OnLoad
+                            'Window.OnInitialize
+    
+    'Closing-Events
+    Case WM_CLOSE
+        Window.OnUnload Cancel
+        If Cancel Then
+            'Nein nicht nope
+        End If
+    
+    Case WM_DESTROY:        Window.OnUnload Cancel
+    
+    Case WM_QUIT:           Window.OnUnload Cancel
+    
+    Case WM_DROPFILES:      'Window.OnDragDrop
+    Case WM_GESTURE
+    Case WM_GESTURENOTIFY:  'Window.onGesture
+    
+    'Keyboard-Events
+    Case WM_KEYDOWN:        Window.OnKeyDown CInt(wParam3), CInt(lParam4)
+    Case WM_CHAR:           Window.OnKeyPress CInt(wParam3)
+    'Case WM_KEYLAST:        Window.OnKeyPress
+    Case WM_KEYUP:          Window.OnKeyUp CInt(wParam3), CInt(lParam4)
+    
+    'Mouse-Events
+    Case WM_MOUSEMOVE:      'Window.OnMouseMove
+    Case WM_LBUTTONDBLCLK:  Window.OnDblClick
+    
+    Case WM_LBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbLeftButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    Case WM_LBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbLeftButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    'Case WM_MBUTTONDBLCLK:
+    Case WM_MBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbMiddleButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    Case WM_MBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbMiddleButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    'Case WM_RBUTTONDBLCLK
+    Case WM_RBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbRightButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    Case WM_RBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbRightButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    
+    Case WM_SETFOCUS:       Window.OnGotFocus
+    Case WM_KILLFOCUS:      Window.OnLostFocus
+    
+    'Case WM_MOUSEHOVER:
+    'Case WM_MOUSEHWHEEL:
+    'Case WM_MOUSEWHEEL:
+    'Case WM_MOUSELEAVE:
+    Case WM_SIZE:           Window.OnResize
+    Case WM_MOVE:           Window.OnResize
+    Case WM_MOVING:         Window.OnResize
+    Case WM_PAINT:          Window.OnPaint
+    
+    
+    
+    
     'Case 0: Debug.Print "WM_NULL"
     'Case 2: PostQuitMessage 0 ': Exit Sub
+    'Case Else: WndProc = DefWindowProcW(hWnd_Param1, uiMsg_Param2, wParam3, lParam4)
     End Select
-    WndProc = DefWindowProcW(hWnd_Param1, uiMsg_Param2, wParam3, lParam4)
     
+    WndProc = DefWindowProcW(hWnd_Param1, uiMsg_Param2, wParam3, lParam4)
 End Function
 
 Public Function EWinMsg_ToStr(ByVal WM_ As Long) As String
@@ -610,7 +682,7 @@ Public Function GetEnumWM() As String
     Dim mx As Long
     For i = 0 To u
         sa(i) = EWinMsg_ToStr(i)
-        mx = max(mx, Len(sa(i)))
+        mx = Max(mx, Len(sa(i)))
     Next
     Dim sEnum As String: sEnum = "Public Enum EWinMsg" & vbCrLf
     Dim s As String, sp As String
