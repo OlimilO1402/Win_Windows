@@ -282,6 +282,10 @@ Public Function Atoms_Item(ByVal ClassName As String) As LongPtr
     End If
 End Function
 
+Public Function Atoms_Delete(ByVal ClassName As String) As Boolean
+    If Atoms_Contains(ClassName) Then m_Atoms.Remove ClassName
+End Function
+
 Public Function Windows_Add(hWnd As LongPtr, Window As Window) As Boolean
     If m_Windows Is Nothing Then Set m_Windows = New Collection
     Windows_Add = Not MPtr.Col_Contains(m_Windows, CStr(hWnd))
@@ -297,10 +301,25 @@ Public Function Windows_Contains(hWnd As LongPtr) As Boolean
     On Error GoTo 0
 End Function
 
+Public Function Windows_Delete(hWnd As LongPtr) As Boolean
+    If Windows_Contains(CStr(hWnd)) Then m_Windows.Remove CStr(hWnd)
+End Function
+
+
+Private Function LoWord(ByVal lngValue As Long) As Long
+    LoWord = (lngValue And &H7FFF)
+End Function
+
+Private Function HiWord(ByVal lngValue As Long) As Long
+    If (lngValue And &H80000000) = &H80000000 Then
+        HiWord = ((lngValue And &H7FFF0000) \ &H10000) Or &H8000
+    Else
+        HiWord = (lngValue And &HFFFF0000) \ &H10000
+    End If
+End Function
+
 'LRESULT Wndproc( HWND unnamedParam1, UINT unnamedParam2, WPARAM unnamedParam3, LPARAM unnamedParam4 )
 Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As EWinMsg, ByVal wParam3 As LongPtr, ByVal lParam4 As LongPtr) As LongPtr
-    'Debug.Print "WndProc: hWnd=" & hWnd_Param1 & ", uiMsg=" & uiMsg_Param2 & ", wParam3: " & wParam3 & ", lParam4: " & lParam4
-    'Debug.Print WindowMessage_ToStr(uiMsg_Param2)
     If Not Windows_Contains(hWnd_Param1) Then
         WndProc = DefWindowProcW(hWnd_Param1, uiMsg_Param2, wParam3, lParam4)
         Exit Function
@@ -348,17 +367,17 @@ Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As EWin
     Case WM_KEYUP:          Window.OnKeyUp CInt(wParam3), CInt(lParam4)
     
     'Mouse-Events
-    Case WM_MOUSEMOVE:      'Window.OnMouseMove
+    Case WM_MOUSEMOVE:      Window.OnMouseMove 0, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     Case WM_LBUTTONDBLCLK:  Window.OnDblClick
     
-    Case WM_LBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbLeftButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
-    Case WM_LBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbLeftButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    Case WM_LBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbLeftButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
+    Case WM_LBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbLeftButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     'Case WM_MBUTTONDBLCLK:
-    Case WM_MBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbMiddleButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
-    Case WM_MBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbMiddleButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    Case WM_MBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbMiddleButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
+    Case WM_MBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbMiddleButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     'Case WM_RBUTTONDBLCLK
-    Case WM_RBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbRightButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
-    Case WM_RBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbRightButton, CInt(wParam3), CSng(lParam4 And &HFFFF), CSng(lParam4 And &HFFFF0000)
+    Case WM_RBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbRightButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
+    Case WM_RBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbRightButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     
     Case WM_SETFOCUS:       Window.OnGotFocus
     Case WM_KILLFOCUS:      Window.OnLostFocus
@@ -367,11 +386,12 @@ Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As EWin
     'Case WM_MOUSEHWHEEL:
     'Case WM_MOUSEWHEEL:
     'Case WM_MOUSELEAVE:
-    Case WM_SIZE:           Window.OnResize
-    Case WM_MOVE:           Window.OnResize
-    Case WM_MOVING:         Window.OnResize
+    'Case WM_SIZE:           Window.OnResize
+    'Case WM_MOVE:           Window.OnResize
+    'Case WM_MOVING:         Window.OnResize
     Case WM_PAINT:          Window.OnPaint
-    
+    Case WM_WINDOWPOSCHANGED: Window.OnResize
+                            Exit Function
     
     
     

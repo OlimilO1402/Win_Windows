@@ -248,6 +248,10 @@ Private Const HWND_MESSAGE As Long = -3&
     Private Declare Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
     'https://learn.microsoft.com/de-de/windows/win32/winmsg/using-window-classes
     
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-unregisterclassw
+    'BOOL UnregisterClassW( [in] LPCWSTR lpClassName, [in, optional] HINSTANCE hInstance);
+    Private Declare Function UnregisterClassW Lib "user32" (ByVal lpClassName As LongPtr, ByVal hInstance As Long) As Long
+    
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-createwindowexw
     'HWND CreateWindowExW(
     '  [in]           DWORD     dwExStyle,
@@ -365,7 +369,24 @@ Private Sub Class_Initialize()
 End Sub
 
 Private Sub Class_Terminate()
-    DestroyWindow m_hWnd
+    RaiseEvent Terminate
+    
+    Dim hr As Long
+    
+    hr = DestroyWindow(m_hWnd)
+    If hr Then
+        MWindow.Windows_Delete m_hWnd
+    Else
+        'ErrHandler "Class_Terminate", "Could not destroy the Window " & m_hWnd
+    End If
+    
+    hr = UnregisterClassW(m_ClsAtom, GethInstance)
+    If hr Then
+        MWindow.Atoms_Delete m_ClsName
+    Else
+        'ErrHandler "Class_Terminate", "Could not unregister the class atom " & m_ClsAtom
+    End If
+    
 End Sub
 
 Friend Sub New_(Name As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx)
@@ -450,6 +471,11 @@ Public Sub Load()
             ErrHandler "Load", "hWnd = 0"
         End If
     End With
+    RaiseEvent Load
+    RaiseEvent Resize
+    RaiseEvent Activate
+    RaiseEvent GotFocus
+'Paint()
 '    Exit Sub
 'Catch:
 End Sub
