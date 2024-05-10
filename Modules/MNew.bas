@@ -15,6 +15,6 @@ Option Explicit
 'End Type
 
 
-Public Function Window(ByVal Caption As String) As Window
-    Set Window = New Window: Window.New_ Caption
+Public Function Window(ByVal Name As String, Optional ByVal Caption As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx) As Window
+    Set Window = New Window: Window.New_ Name, Caption, Style, StyleEx
 End Function

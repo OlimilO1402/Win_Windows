@@ -4,7 +4,7 @@ Begin VB.Form FMain
    ClientHeight    =   12165
    ClientLeft      =   120
    ClientTop       =   465
-   ClientWidth     =   18585
+   ClientWidth     =   15255
    BeginProperty Font 
       Name            =   "Segoe UI"
       Size            =   9.75
@@ -16,8 +16,24 @@ Begin VB.Form FMain
    EndProperty
    LinkTopic       =   "FMain"
    ScaleHeight     =   12165
-   ScaleWidth      =   18585
+   ScaleWidth      =   15255
    StartUpPosition =   3  'Windows-Standard
+   Begin VB.CommandButton Command1 
+      Caption         =   "Command1"
+      Height          =   375
+      Left            =   3000
+      TabIndex        =   6
+      Top             =   120
+      Width           =   1695
+   End
+   Begin VB.CommandButton Command2 
+      Caption         =   "Command2"
+      Height          =   375
+      Left            =   12000
+      TabIndex        =   5
+      Top             =   120
+      Width           =   1695
+   End
    Begin VB.CommandButton BtnCreateVBForm 
       Caption         =   "Create VB.Form Form1"
       Height          =   375
@@ -75,12 +91,55 @@ Attribute Form2.VB_VarHelpID = -1
 
 Private Sub BtnCreateVBForm_Click()
     Set Form1 = New Form1 'Got it's name/classname in the Property-Editor
+    'Form1.RightToLeft = True
+    'only possible in Property-Editor:
+    'Form1.MinButton = False
+    'Form1.MaxButton = False
+    'Form1.ControlBox = False
     Load Form1
     Form1.Show
+    'Form1.WindowState = FormWindowStateConstants.vbMaximized
+    'Form1.RightToLeft = True
 End Sub
 
+'Enum PictureTypeConstants
+'    vbPicTypeNone = 0
+'    vbPicTypeBitmap = 1
+'    vbPicTypeMetafile = 2
+'    vbPicTypeIcon = 3
+'    vbPicTypeEMetafile = 4
+'End Enum
+'
+Private Function PictureTypeConstants_ToStr(e As PictureTypeConstants) As String
+    Dim s As String
+    Select Case e
+    Case vbPicTypeNone:      s = "vbPicTypeNone"
+    Case vbPicTypeBitmap:    s = "vbPicTypeBitmap"
+    Case vbPicTypeMetafile:  s = "vbPicTypeMetafile"
+    Case vbPicTypeIcon:      s = "vbPicTypeIcon"
+    Case vbPicTypeEMetafile: s = "vbPicTypeEMetafile"
+    End Select
+    PictureTypeConstants_ToStr = s
+End Function
+
 Private Sub BtnCreateWindow_Click()
+    
     Set Form2 = MNew.Window("Form2") 'Got it's name/classname by the constructor function
+    'Form2.MinButton = False
+    'Form2.MaxButton = False
+    'Form2.ControlBox = False
+    'Form2.ScrollBars = ScrollBarConstants.vbBoth
+    'Form2.ScrollBars = ScrollBarConstants.vbHorizontal
+    'Form2.ScrollBars = ScrollBarConstants.vbVertical
+    'Form2.WindowState = FormWindowStateConstants.vbMinimized
+    'Form2.BorderStyle = vbBSNone
+    If Not Form1 Is Nothing Then
+        Dim spic As StdPicture: Set spic = Form1.Icon
+        Debug.Print PictureTypeConstants_ToStr(spic.Type)
+        'Debug.Print vbPicTypeIcon
+        Set Form2.Icon = spic
+        'Debug.Print "OK"
+    End If
     Form2.Load
     Form2.Show
 End Sub
@@ -97,8 +156,34 @@ Private Sub Debug_Print2(s As String)
     Text2.Text = Text2.Text & s & vbCrLf
 End Sub
 
+Private Sub Command1_Click()
+    'Form1.WindowState = FormWindowStateConstants.vbMaximized
+    'Form1.WindowState = FormWindowStateConstants.vbMinimized
+    'Form1.Caption = "Dies ist die Caption"
+    'Form1.Visible = Not Form1.Visible
+    
+End Sub
+
+Private Sub Command2_Click()
+    'Form2.WindowState = FormWindowStateConstants.vbMaximized
+    'Form2.RightToLeft = True
+    'Form2.Caption = "Dies ist die Caption"
+    'Form2.Visible = Not Form2.Visible
+End Sub
+
 Private Sub Form_Unload(Cancel As Integer)
-    Set Form2 = Nothing
+    
+    If Not Form1 Is Nothing Then
+        Unload Form1
+        Set Form1 = Nothing
+    End If
+
+
+    If Not Form2 Is Nothing Then
+        Form2.Unload
+        Set Form2 = Nothing
+    End If
+    
 End Sub
 
 ' v ############################## v '    Events Form1    ' v ############################## v '

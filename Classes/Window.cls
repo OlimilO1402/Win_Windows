@@ -55,7 +55,7 @@ Private Type WNDCLASSEXW
     hbrBackground As LongPtr   'HBRUSH
     lpszMenuName  As LongPtr   'LPCSTR
     lpszClassName As LongPtr   'LPCSTR
-    hIconSm       As LongPtr   'HICON
+    hIconSm       As LongPtr   'HICON the small icon
 End Type '} WNDCLASSEXA, *PWNDCLASSEXA, *NPWNDCLASSEXA, *LPWNDCLASSEXA;
 
 'dwStyle
@@ -183,6 +183,7 @@ End Enum
 '  LPCWSTR   lpszClass;
 '  DWORD     dwExStyle;
 '} CREATESTRUCTW, *LPCREATESTRUCTW;
+'contains every argument CreateWindowExW needs in the order needed for the stack
 Private Type CREATESTRUCTW
     lpCreateParams As LongPtr
     hInstance      As LongPtr
@@ -232,6 +233,8 @@ Private Const HWND_MESSAGE As Long = -3&
     
     Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal EWndShow As Long) As Long
     
+    Private Declare PtrSafe Function SetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr) As Long
+    
     Private Declare PtrSafe Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
     
     Private Declare PtrSafe Function GetLastError Lib "kernel32" () As Long
@@ -267,13 +270,12 @@ Private Const HWND_MESSAGE As Long = -3&
     '  [in, optional] HINSTANCE hInstance,
     '  [in, optional] LPVOID    lpParam
     ');
-    Private Declare Function CreateWindowExW Lib "user32" ( _
-        ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
-        ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
+    Private Declare Function CreateWindowExW Lib "user32" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, _
+        ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
         ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowpos
-    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As EWndShow) As Long
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-movewindow
     'BOOL MoveWindow( [in] HWND hWnd, [in] int  X, [in] int  Y, [in] int  nWidth, [in] int  nHeight, [in] BOOL bRepaint );
@@ -281,7 +283,11 @@ Private Const HWND_MESSAGE As Long = -3&
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-showwindow
     'BOOL ShowWindow( [in] HWND hWnd, [in] int  nCmdShow );
-    Private Declare Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal EWndShow As Long) As Long
+    Private Declare Function ShowWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal nCmdShow As EWndShow) As Long
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowtextw
+    'BOOL SetWindowTextW( [in] HWND hWnd, [in, optional] LPCWSTR lpString);
+    Private Declare Function SetWindowTextW Lib "user32" (ByVal hWnd As LongPtr, ByVal lpString As LongPtr) As Long
     
     'BOOL DestroyWindow( [in] HWND hWnd );
     Private Declare Function DestroyWindow Lib "user32" (ByVal hWnd As LongPtr) As Long
@@ -296,13 +302,21 @@ Private Const HWND_MESSAGE As Long = -3&
                  
 #End If
 
-Private m_ClsName As String
-Private m_WndCls  As WNDCLASSEXW
-Private m_ClsAtom As LongPtr
-Private m_Name    As String
-Private m_Window  As CREATESTRUCTW
-Private m_hWnd    As LongPtr
-Private m_Tag     As Variant
+Private m_Name        As String
+Private m_Caption     As String
+Private m_ClsName     As String
+Private m_WndCls      As WNDCLASSEXW
+Private m_ClsAtom     As LongPtr
+Private m_Window      As CREATESTRUCTW
+Private m_hWnd        As LongPtr
+Private m_hDC         As LongPtr
+Private m_Tag         As Variant
+Private m_ScaleMode   As ScaleModeConstants
+Private m_WindowState As EWndShow
+Private m_Controls    As Collection
+Private m_ActControl  As Object
+Private m_Font        As StdFont
+Private m_Icon        As StdPicture 'IPictureDisp
 
 Public Event Activate()
 Public Event Click()
@@ -336,31 +350,29 @@ Public Event Resize()
 Public Event Terminate()
 Public Event Unload(Cancel As Integer)
 
-
 Private Function GethInstance() As LongPtr
     GethInstance = GetModuleHandleW(StrPtr(vbNullString))
 End Function
 
 Private Sub Class_Initialize()
-    m_ClsName = "ThunderVB64uWindow" '& vbNullChar
+    m_WindowState = SW_NORMAL
+    m_Name = "Window"
+    m_ClsName = "ThunderVB64uWindow"
+    m_Caption = "Form"
     If Not Register Then
         'MsgBox "Could not register class: " & m_ClsName
         'Exit Sub
     End If
-    m_Name = "VBForm" & vbNullChar
+    Dim cap As String: cap = m_Caption & vbNullChar
     With m_Window
-        'entweder so
-        '.lpszClass = m_ClsAtom
-        'oder auch so:
-        '.lpszClass = StrPtr(m_ClsName)
-        
-        .lpszName = StrPtr(m_Name)
+        .lpszName = StrPtr(cap)
         .hInstance = GethInstance 'App.hInstance
         .Style = VBFormStyle
         .dwExStyle = VBFormStyleEx ' WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or _
         '         WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or _
         '         WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
         '.dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+        'default position and size
         .X = 33
         .Y = 26
         .cx = 320 'px VB-default
@@ -370,7 +382,10 @@ End Sub
 
 Private Sub Class_Terminate()
     RaiseEvent Terminate
-    
+    Destroy
+End Sub
+
+Private Sub Destroy()
     Dim hr As Long
     
     hr = DestroyWindow(m_hWnd)
@@ -386,14 +401,16 @@ Private Sub Class_Terminate()
     Else
         'ErrHandler "Class_Terminate", "Could not unregister the class atom " & m_ClsAtom
     End If
-    
 End Sub
 
-Friend Sub New_(Name As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx)
-    m_Name = Name & vbNullChar
+Friend Sub New_(ByVal Name As String, Optional ByVal Caption As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx)
+    m_Name = Name
+    m_ClsName = m_ClsName & Name
+    m_Caption = IIf(Len(Caption), Caption, m_Name)
+    Dim cap As String: cap = m_Caption & vbNullChar
     With m_Window
-        .hInstance = GethInstance 'App.hInstance
-        .lpszName = StrPtr(m_Name)
+        '.hInstance = GethInstance 'App.hInstance
+        .lpszName = StrPtr(cap)
         .Style = Style
         .dwExStyle = StyleEx
         '.Style = WS_OVERLAPPEDWINDOW
@@ -480,95 +497,411 @@ Public Sub Load()
 'Catch:
 End Sub
 
+Public Sub Unload()
+    Dim Cancel  As Integer
+    RaiseEvent Unload(Cancel)
+    If Cancel Then Exit Sub
+    Destroy
+End Sub
+
 'Public Sub Show(Optional Modal As FormShowConstants, Optional OwnerForm As Object): End Sub
 Public Sub Show(Optional Modal As FormShowConstants, Optional OwnerForm As Object)
     If m_hWnd = 0 Then Me.Load
     If m_hWnd = 0 Then Exit Sub
-    Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_SHOWNORMAL)
+    'Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_SHOWNORMAL)
+    Dim hr As Long: hr = ShowWindow(m_hWnd, m_WindowState)
     
 End Sub
 
 ' v ############################## v '    OM TODO:    ' v ############################## v '
-Public Property Get ActiveControl() As Control:                End Property
-Public Property Get Appearance() As Integer:                   End Property
-Public Property Let Appearance(ByVal Value As Integer):        End Property
-Public Property Get AutoRedraw() As Boolean:                   End Property
-Public Property Let AutoRedraw(ByVal Value As Boolean):        End Property
-Public Property Get BackColor() As Long:                       End Property
-Public Property Let BackColor(ByVal Value As Long):            End Property
-Public Property Get BorderStyle() As FormBorderStyleConstants: End Property
-Public Property Let BorderStyle(ByVal Value As FormBorderStyleConstants): End Property
-Public Property Get Caption() As String:                       End Property
-Public Sub CCircle():                                          End Sub
-Public Property Get ClipControls() As Boolean:                 End Property
-Public Sub Cls():                                              End Sub
-Public Property Get ControlBox() As Boolean:                   End Property
-Public Property Get Controls() As Object:                      End Property
-Public Property Get Count() As Integer:                        End Property
+'Drawing functions:
+Public Sub Cls() 'clear screen
+    '
+End Sub
+Public Sub CCircle() 'draws a Circle
+    '
+End Sub
+Public Sub Line() 'draws a line
+    '
+End Sub
+Public Function Point(X As Single, Y As Single) As Long 'moves to point
+    '
+End Function
+Public Sub PPSet(Step As Integer, X As Single, Y As Single, Color As Long)
+    '
+End Sub
+
+Public Property Get ActiveControl() As Control
+    'Gibt das Steuerelement mit dem Fokus zurück.
+
+End Property
+
+'0 - 2D
+'1 - 3D
+Public Property Get Appearance() As Integer
+    'Gibt an oder legt fest, ob ein Objekt zur Laufzeit mit 3D-Effekten ausgegeben wird oder nicht.
+
+End Property
+Public Property Let Appearance(ByVal Value As Integer)
+    '
+End Property
+
+Public Property Get AutoRedraw() As Boolean
+    ' Gibt die Ausgabe einer Grafikmethode an eine beständige Bitmap zurück oder legt diese fest.
+End Property
+Public Property Let AutoRedraw(ByVal Value As Boolean)
+    '
+End Property
+
+Public Property Get BackColor() As Long
+    ' Gibt die Hintergrundfarbe zurück, die verwendet wird, um Text und Grafik in einem Objekt anzuzeigen, oder legt diese fest.
+
+End Property
+Public Property Let BackColor(ByVal Value As Long)
+    '
+End Property
+
+'Enum FormBorderStyleConstants
+'    vbBSNone = 0
+'    vbFixedSingle = 1
+'    vbSizable = 2
+'    vbFixedDialog = 3
+'    vbFixedToolWindow = 4
+'    vbSizableToolWindow = 5
+'End Enum
+Public Property Get BorderStyle() As FormBorderStyleConstants
+    'WS_SIZEBOX    = &H40000         '  Das Fenster verfügt über einen Rahmen zur Größenanpassung. Identisch mit dem WS_THICKFRAME Stil.
+    'WS_THICKFRAME = &H40000         '  Das Fenster verfügt über einen Rahmen zur Größenanpassung. Identisch mit dem WS_SIZEBOX Stil.
+    'WS_DLGFRAME   = &H400000        '  Das Fenster verfügt über einen Rahmen eines Stils, der in der Regel mit Dialogfeldern verwendet wird.
+                                     '  Ein Fenster mit dieser Formatvorlage kann keine Titelleiste aufweisen.
+    'WS_BORDER     = &H800000        '  Das Fenster verfügt über einen dünnen Rahmen
+    m_Window.Style = m_Window.Style
+End Property
+Public Property Let BorderStyle(ByVal Value As FormBorderStyleConstants)
+    With m_Window
+        Select Case Value
+        Case FormBorderStyleConstants.vbBSNone:            .Style = .Style And WS_DLGFRAME
+        Case FormBorderStyleConstants.vbFixedDialog:       .Style = .Style And WS_DLGFRAME
+        Case FormBorderStyleConstants.vbFixedSingle:       .Style = .Style And WS_BORDER
+        Case FormBorderStyleConstants.vbFixedToolWindow:   .Style = .Style And WS_DLGFRAME
+        Case FormBorderStyleConstants.vbSizable:           .Style = .Style And WS_SIZEBOX
+        Case FormBorderStyleConstants.vbSizableToolWindow: .Style = .Style And WS_DLGFRAME
+        End Select
+    End With
+End Property
+
+Public Property Get Name() As String
+    Name = m_Name
+End Property
+
+Public Property Get Caption() As String
+    Caption = m_Caption
+End Property
+Public Property Let Caption(ByVal Value As String)
+    m_Caption = Value
+    Dim hr As Long: hr = SetWindowTextW(m_hWnd, StrPtr(m_Caption & vbNullChar))
+End Property
+
+Public Property Get Text() As String
+    Text = Me.Caption
+End Property
+Public Property Let Text(ByVal Value As String)
+    Me.Caption = Value
+End Property
+
+Public Property Get ClassName() As String
+    ClassName = m_ClsName
+End Property
+    
+Public Property Get ClipControls() As Boolean
+    '
+End Property
+
+Public Property Get Controls() As Object
+    Set Controls = m_Controls
+End Property
+
+Public Property Get Count() As Integer
+    'schreibgeschützt
+    'Gibt die Anzahl der Objekte in einer Auflistung zurück.
+    Count = m_Controls.Count
+End Property
+
 Public Property Get CurrentX() As Single:                      End Property
 Public Property Get CurrentY() As Single:                      End Property
-Public Property Get DrawMode() As DrawModeConstants:           End Property
+
+Public Property Get DrawMode() As DrawModeConstants
+    '
+End Property
+
 Public Property Get DrawStyle() As DrawStyleConstants:         End Property
 Public Property Get DrawWidth() As Integer:                    End Property
 Public Property Get Enabled() As Boolean:                      End Property
 Public Property Get FillColor() As Long:                       End Property
 Public Property Get FillStyle() As FillStyleConstants:         End Property
-Public Property Get Font() As StdFont:                         End Property
-Public Property Get FontBold() As Boolean:                     End Property
-Public Property Get FontItalic() As Boolean:                   End Property
-Public Property Get FontName() As String:                      End Property
-Public Property Get FontSize() As Single:                      End Property
-Public Property Get FontStrikethru() As Boolean:               End Property
-Public Property Get FontTransparent() As Boolean:              End Property
-Public Property Get FontUnderline() As Boolean:                End Property
+
+' v ############################## v '    Font    ' v ############################## v '
+Public Property Get Font() As StdFont
+    'Gibt ein Font-Objekt zurück.
+    Set Font = m_Font
+End Property
+Public Property Set Font(ByVal Value As StdFont)
+    'm_Window.h
+    Set m_Font = Value
+End Property
+
+Public Property Get FontBold() As Boolean
+    'Gibt Schriftstile für Fettschrift zurück oder legt diese fest.
+    FontBold = m_Font.Bold
+End Property
+Public Property Let FontBold(ByVal Value As Boolean)
+    m_Font.Bold = Value
+End Property
+
+Public Property Get FontItalic() As Boolean
+    FontItalic = m_Font.Italic
+End Property
+Public Property Let FontItalic(ByVal Value As Boolean)
+    m_Font.Italic = Value
+End Property
+
+Public Property Get FontName() As String
+    FontName = m_Font.Name
+End Property
+Public Property Let FontName(ByVal Value As String)
+    m_Font.Name = Value
+End Property
+
+Public Property Get FontSize() As Single
+    FontSize = m_Font.Size
+End Property
+Public Property Let FontSize(ByVal Value As Single)
+    m_Font.Size = Value
+End Property
+
+Public Property Get FontStrikethru() As Boolean
+    FontStrikethru = m_Font.Strikethrough
+End Property
+Public Property Let FontStrikethru(ByVal Value As Boolean)
+    m_Font.Strikethrough = Value
+End Property
+
+Public Property Get FontTransparent() As Boolean
+    '
+End Property
+Public Property Let FontTransparent(ByVal Value As Boolean)
+    'm_font.tr
+End Property
+
+Public Property Get FontUnderline() As Boolean
+    FontUnderline = m_Font.Underline
+End Property
+Public Property Let FontUnderline(ByVal Value As Boolean)
+    m_Font.Underline = Value
+End Property
+' ^ ############################## ^ '    Font    ' ^ ############################## ^ '
+
+
 Public Property Get ForeColor() As Long:                       End Property
-Public Property Get HasDC() As Boolean:                        End Property
-Public Property Get hDC() As LongPtr:                          End Property
+
+Public Property Get HasDC() As Boolean
+    '
+    
+End Property
+Public Property Get hDC() As LongPtr
+    '
+    
+End Property
 'Public Property Get Height() As Single : End Property
 Public Property Get HelpContextID() As Long: End Property
 
 Public Sub Hide()
     'Mitglied von VB.Form
     'Blendet ein MDIForm- oder Form-Objekt aus, ohne es zu entladen.
-    Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_HIDE)
+    If m_hWnd Then
+        Dim hr As Long: hr = ShowWindow(m_hWnd, EWndShow.SW_HIDE)
+    End If
 End Sub
 
 'Public Property Get hWnd() As LongPtr: End Property
-Public Property Get Icon() As IPictureDisp:  End Property
+Public Property Get Icon() As StdPicture ' IPictureDisp
+    Set Icon = m_Icon
+End Property
+Public Property Set Icon(ByVal Value As StdPicture) ' IPictureDisp)
+    Set m_Icon = Value
+    'Debug.Print m_Icon.Handle
+    m_WndCls.hIcon = m_Icon.Handle
+    m_WndCls.hIconSm = m_Icon.Handle
+End Property
+
 Public Property Get Image() As IPictureDisp: End Property
 Public Property Get KeyPreview() As Boolean: End Property
 'Public Property Get Left() As Single : End Property
-Public Sub Line(): End Sub
 Public Property Get LinkMode() As Integer: End Property
 Public Property Get LinkTopic() As String: End Property
-Public Property Get MaxButton() As Boolean: End Property
-Public Property Get MDIChild() As Boolean: End Property
-Public Property Get MinButton() As Boolean: End Property
+
+'Public Enum EWndStyle
+'    WS_TILED = &H0&                 '  Das Fenster ist ein überlappende Fenster. Ein überlappendes Fenster hat eine Titelleiste und einen Rahmen. Identisch mit dem WS_OVERLAPPED Stil.
+'    WS_OVERLAPPED = &H0&            '  Das Fenster ist ein überlappende Fenster. Ein überlappendes Fenster hat eine Titelleiste und einen Rahmen. Identisch mit dem WS_TILED-Stil .
+'
+'    WS_MAXIMIZEBOX = &H10000        '  Das Fenster verfügt über eine Schaltfläche zum Maximieren. Kann nicht mit dem WS_EX_CONTEXTHELP-Stil kombiniert werden. Die WS_SYSMENU Formatvorlage muss ebenfalls angegeben werden.
+'    WS_TABSTOP = &H10000            '  Das Fenster ist ein Steuerelement, das den Tastaturfokus erhalten kann, wenn der Benutzer die TAB-TASTE drückt. Durch Drücken der TAB-TASTE wird der Tastaturfokus auf das nächste Steuerelement mit der WS_TABSTOP-Formatvorlage geändert.Sie können diesen Stil aktivieren und deaktivieren, um die Navigation im Dialogfeld zu ändern. Um diesen Stil zu ändern, nachdem ein Fenster erstellt wurde, verwenden Sie die SetWindowLong-Funktion . Damit vom Benutzer erstellte Fenster und moduslose Dialoge mit Tabstopps funktionieren, ändern Sie die Nachrichtenschleife so, dass die IsDialogMessage-Funktion aufgerufen wird.
+'    WS_GROUP = &H20000              '  Das Fenster ist das erste Steuerelement einer Gruppe von Steuerelementen. Die Gruppe besteht aus diesem ersten Steuerelement und allen danach definierten Steuerelementen bis zum nächsten Steuerelement mit dem WS_GROUP Stil. Das erste Steuerelement in jeder Gruppe hat in der Regel den WS_TABSTOP Stil, sodass der Benutzer von Gruppe zu Gruppe wechseln kann. Der Benutzer kann anschließend den Tastaturfokus von einem Steuerelement in der Gruppe auf das nächste Steuerelement in der Gruppe ändern, indem er die Richtungstasten verwendet.Sie können diesen Stil aktivieren und deaktivieren, um die Navigation im Dialogfeld zu ändern. Um diesen Stil zu ändern, nachdem ein Fenster erstellt wurde, verwenden Sie die SetWindowLong-Funktion .
+'    WS_MINIMIZEBOX = &H20000        '  Das Fenster verfügt über eine Schaltfläche zum Minimieren. Kann nicht mit dem WS_EX_CONTEXTHELP-Stil kombiniert werden. Die WS_SYSMENU Formatvorlage muss ebenfalls angegeben werden.
+'    WS_SIZEBOX = &H40000            '  Das Fenster verfügt über einen Rahmen zur Größenanpassung. Identisch mit dem WS_THICKFRAME Stil.
+'    WS_THICKFRAME = &H40000         '  Das Fenster verfügt über einen Rahmen zur Größenanpassung. Identisch mit dem WS_SIZEBOX Stil.
+'    WS_SYSMENU = &H80000            '  Das Fenster verfügt über ein Fenstermenü auf der Titelleiste. Die WS_CAPTION Formatvorlage muss ebenfalls angegeben werden.
+'
+'    WS_HSCROLL = &H100000           '  Das Fenster verfügt über eine horizontale Bildlaufleiste.
+'    WS_VSCROLL = &H200000           '  Das Fenster verfügt über eine vertikale Bildlaufleiste.
+'    WS_DLGFRAME = &H400000          '  Das Fenster verfügt über einen Rahmen eines Stils, der in der Regel mit Dialogfeldern verwendet wird. Ein Fenster mit dieser Formatvorlage kann keine Titelleiste aufweisen.
+'    WS_BORDER = &H800000            '  Das Fenster verfügt über einen dünnen Rahmen
+'    WS_CAPTION = &HC00000           '  Das Fenster verfügt über eine Titelleiste (einschließlich des WS_BORDER Stils).
+'
+'    WS_MAXIMIZE = &H1000000         '  Das Fenster wird anfänglich maximiert.
+'    WS_CLIPCHILDREN = &H2000000     '  Schließt den Bereich aus, der von untergeordneten Fenstern belegt wird, wenn das Zeichnen innerhalb des übergeordneten Fensters erfolgt. Diese Formatvorlage wird beim Erstellen des übergeordneten Fensters verwendet.
+'    WS_CLIPSIBLINGS = &H4000000     '  Schneidet untergeordnete Fenster relativ zueinander ab; Das heißt, wenn ein bestimmtes untergeordnetes Fenster eine WM_PAINT-Meldung empfängt, wird vom WS_CLIPSIBLINGS-Format alle anderen überlappenden untergeordneten Fenster aus dem Bereich des zu aktualisierenden untergeordneten Fensters heraus geklammert. Wenn WS_CLIPSIBLINGS nicht angegeben ist und sich untergeordnete Fenster überschneiden, ist es beim Zeichnen innerhalb des Clientbereichs eines untergeordneten Fensters möglich, innerhalb des Clientbereichs eines benachbarten untergeordneten Fensters zu zeichnen.
+'    WS_DISABLED = &H8000000         '  Das Fenster ist zunächst deaktiviert. Ein deaktiviertes Fenster kann keine Eingaben vom Benutzer empfangen. Um dies zu ändern, nachdem ein Fenster erstellt wurde, verwenden Sie die Funktion EnableWindow .'
+'
+'    WS_VISIBLE = &H10000000         '  Das Fenster ist zunächst sichtbar. Diese Formatvorlage kann mithilfe der ShowWindow - oder SetWindowPos-Funktion aktiviert und deaktiviert werden.
+'    WS_ICONIC = &H20000000          '  Das Fenster wird zunächst minimiert. Identisch mit dem WS_MINIMIZE Stil.
+'    WS_MINIMIZE = &H20000000        '  Das Fenster wird zunächst minimiert. Identisch mit dem WS_ICONIC Stil.
+'    WS_CHILD = &H40000000           '  Das Fenster ist ein untergeordnetes Fenster. Ein Fenster mit dieser Formatvorlage kann keine Menüleiste aufweisen. Diese Formatvorlage kann nicht mit der WS_POPUP-Formatvorlage verwendet werden.
+'    WS_CHILDWINDOW = &H40000000     '  Identisch mit dem WS_CHILD Stil.
+'    WS_POPUP = &H80000000           '  Das Fenster ist ein Popupfenster. Dieser Stil kann nicht mit dem WS_CHILD-Stil verwendet werden.
+'    WS_POPUPWINDOW = (WS_POPUP Or WS_BORDER Or WS_SYSMENU)       'Das Fenster ist ein Popupfenster. Die Formatvorlagen WS_CAPTION und WS_POPUPWINDOW müssen kombiniert werden, um das Fenstermenü sichtbar zu machen.
+'    WS_TILEDWINDOW = (WS_OVERLAPPED Or WS_CAPTION Or WS_SYSMENU Or WS_THICKFRAME Or WS_MINIMIZEBOX Or WS_MAXIMIZEBOX)           ' Das Fenster ist ein überlappende Fenster. Identisch mit dem WS_OVERLAPPEDWINDOW Stil.
+'    WS_OVERLAPPEDWINDOW = (WS_OVERLAPPED Or WS_CAPTION Or WS_SYSMENU Or WS_THICKFRAME Or WS_MINIMIZEBOX Or WS_MAXIMIZEBOX) 'Das Fenster ist ein überlappende Fenster. Identisch mit dem WS_TILEDWINDOW Stil.
+'    VBFormStyle = WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'End Enum
+Public Property Get ControlBox() As Boolean
+    ControlBox = m_Window.Style And WS_SYSMENU
+End Property
+Public Property Let ControlBox(ByVal Value As Boolean)
+    m_Window.Style = m_Window.Style Or WS_SYSMENU
+    If Not Value Then m_Window.Style = m_Window.Style Xor WS_SYSMENU
+End Property
+
+Public Property Get MinButton() As Boolean
+    MinButton = m_Window.Style And WS_MINIMIZEBOX
+End Property
+Public Property Let MinButton(ByVal Value As Boolean)
+    m_Window.Style = m_Window.Style Or WS_MINIMIZEBOX
+    If Not Value Then m_Window.Style = m_Window.Style Xor WS_MINIMIZEBOX
+End Property
+
+Public Property Get MaxButton() As Boolean
+    MaxButton = m_Window.Style And WS_MAXIMIZEBOX
+End Property
+Public Property Let MaxButton(ByVal Value As Boolean)
+    m_Window.Style = m_Window.Style Or WS_MAXIMIZEBOX
+    If Not Value Then m_Window.Style = m_Window.Style Xor WS_MAXIMIZEBOX
+End Property
+
+Public Property Get Visible() As Boolean
+    'Mitglied von VB.Form
+    'Gibt einen Wert zurück, der bestimmt, ob ein Objekt sichtbar oder versteckt ist, oder legt diesen fest.
+    Visible = m_Window.Style And WS_VISIBLE
+End Property
+Public Property Let Visible(ByVal Value As Boolean)
+    m_Window.Style = m_Window.Style Or WS_VISIBLE
+    If Not Value Then m_Window.Style = m_Window.Style Xor WS_VISIBLE
+    If m_hWnd Then
+        Dim sw As EWndShow: sw = IIf(Value, EWndShow.SW_SHOW, EWndShow.SW_HIDE)
+        Dim hr As Long:     hr = ShowWindow(m_hWnd, sw)
+    End If
+End Property
+
+Public Property Get ScrollBars() As ScrollBarConstants
+    ScrollBars = ScrollBarConstants.vbSBNone
+    If m_Window.Style And WS_HSCROLL Then ScrollBars = ScrollBars And ScrollBarConstants.vbHorizontal
+    If m_Window.Style And WS_VSCROLL Then ScrollBars = ScrollBars And ScrollBarConstants.vbVertical
+End Property
+Public Property Let ScrollBars(ByVal Value As ScrollBarConstants)
+    m_Window.Style = m_Window.Style Or WS_HSCROLL
+    m_Window.Style = m_Window.Style Or WS_VSCROLL
+    If Value = ScrollBarConstants.vbHorizontal Then
+        m_Window.Style = m_Window.Style Xor WS_VSCROLL
+    End If
+    If Value = ScrollBarConstants.vbVertical Then
+        m_Window.Style = m_Window.Style Xor WS_HSCROLL
+    End If
+    If Value = ScrollBarConstants.vbSBNone Then
+        m_Window.Style = m_Window.Style Xor WS_HSCROLL
+        m_Window.Style = m_Window.Style Xor WS_VSCROLL
+    End If
+End Property
+
+
+
+Public Property Get MDIChild() As Boolean
+    MDIChild = m_Window.dwExStyle And WS_EX_MDICHILD
+End Property
+Public Property Let MDIChild(ByVal Value As Boolean)
+    m_Window.dwExStyle = m_Window.dwExStyle Or WS_EX_MDICHILD
+    If Not Value Then m_Window.dwExStyle = m_Window.dwExStyle Xor WS_EX_MDICHILD
+End Property
+
 Public Property Get MouseIcon() As IPictureDisp: End Property
 Public Property Get MousePointer() As Integer: End Property
 'Public Sub Move(): End Sub
 Public Property Get Moveable() As Boolean: End Property
-Public Property Get Name() As String: End Property
+
 Public Sub OLEDrag(): End Sub
 Public Property Get OLEDropMode() As Integer: End Property
 Public Sub PaintPicture(): End Sub
 Public Property Get Palette() As IPictureDisp: End Property
 Public Property Get PaletteMode() As Integer: End Property
 Public Property Get Picture() As IPictureDisp: End Property
-Public Function Point(X As Single, Y As Single) As Long: End Function
+
+
 Public Sub PopupMenu(Menu As Object, Optional Flags, Optional X, Optional Y, Optional DefaultMenu): End Sub
 Public Sub PrintForm(): End Sub
-Public Sub PPSet(Step As Integer, X As Single, Y As Single, Color As Long): End Sub
-Public Sub Refresh(): End Sub
-Public Property Get RightToLeft() As Boolean: End Property
+
+Public Sub Refresh()
+    RaiseEvent Paint
+End Sub
+
+Public Property Get RightToLeft() As Boolean
+    'WS_EX_RTLREADING
+End Property
+Public Property Let RightToLeft(ByVal Value As Boolean)
+    'WS_EX_RTLREADING
+End Property
+
 Public Sub SScale(): End Sub
-Public Property Get ScaleHeight() As Single: End Property
+
+Public Property Get ScaleMode() As Integer
+    'Gibt einen Wert zurück, der die Maßeinheiten für Objektkoordinaten bestimmt, wenn Grafikmethoden verwendet oder Steuerelemente positioniert werden,
+    'oder legt diesen fest.
+    ScaleMode = m_ScaleMode
+'Enum VBRUN.ScaleModeConstants
+    'vbUser              =  0
+    'vbTwips             =  1
+    'vbPoints            =  2
+    'vbPixels            =  3
+    'vbCharacters        =  4
+    'vbInches            =  5
+    'vbMillimeters       =  6
+    'vbCentimeters       =  7
+    'vbHimetric          =  8
+    'vbContainerPosition =  9
+    'vbContainerSize     = 10
+'End Enum
+End Property
+Public Property Let ScaleMode(ByVal Value As Integer)
+    'Gibt einen Wert zurück, der die Maßeinheiten für Objektkoordinaten bestimmt, wenn Grafikmethoden verwendet oder Steuerelemente positioniert werden,
+    'oder legt diesen fest.
+    m_ScaleMode = Value
+End Property
 Public Property Get ScaleLeft() As Single: End Property
-Public Property Get ScaleMode() As Integer: End Property
 Public Property Get ScaleTop() As Single: End Property
 Public Property Get ScaleWidth() As Single: End Property
+Public Property Get ScaleHeight() As Single: End Property
+
 Public Function ScaleX(Width As Single, Optional FromScale, Optional ToScale) As Single: End Function
 Public Function ScaleY(Height As Single, Optional FromScale, Optional ToScale): End Function
+
 Public Sub SetFocus(): End Sub
 
 
@@ -581,6 +914,13 @@ End Property
 Public Property Let ShowInTaskbar(ByVal Value As Boolean)
     '
 End Property
+
+'Enum StartUpPositionConstants
+'    vbStartUpManual = 0
+'    vbStartUpOwner = 1
+'    vbStartUpScreen = 2
+'    vbStartUpWindowsDefault = 3
+'End Enum
 
 Public Property Get StartUpPosition() As Integer
     'schreibgeschützt
@@ -620,14 +960,6 @@ Public Sub ValidateControls()
     'Überprüfen Sie den Inhalt des letzten Steuerelements auf dem Formular, bevor Sie das Formular verlassen.
 End Sub
 
-Public Property Get Visible() As Boolean
-    'Mitglied von VB.Form
-    'Gibt einen Wert zurück, der bestimmt, ob ein Objekt sichtbar oder versteckt ist, oder legt diesen fest.
-End Property
-Public Property Let Visible(ByVal Value As Boolean)
-    '
-End Property
-
 Public Property Get WhatsThisButton() As Boolean
     'schreibgeschützt
     'Mitglied von VB.Form
@@ -646,13 +978,35 @@ Public Sub WhatsThisMode()
 End Sub
 
 'Public Property Get Width() As Single: End Property
-
-Public Property Get WindowState() As FormWindowStateConstants
+'Enum FormWindowStateConstants
+'    vbNormal = 0
+'    vbMinimized = 1
+'    vbMaximized = 2
+'End Enum
+Public Property Get WindowState() As Integer 'FormWindowStateConstants
     'Mitglied von VB.Form
     'Gibt den Anzeigezustand eines Formularfensters zur Laufzeit zurück oder legt diesen fest.
+    Dim ws As FormWindowStateConstants
+    Select Case m_WindowState
+    Case SW_NORMAL:   ws = FormWindowStateConstants.vbNormal
+    Case SW_MINIMIZE: ws = FormWindowStateConstants.vbMinimized
+    Case SW_MAXIMIZE: ws = FormWindowStateConstants.vbMaximized
+    End Select
+    WindowState = ws
 End Property
-Public Property Let WindowState(ByVal Value As FormWindowStateConstants)
-    '
+Public Property Let WindowState(ByVal Value As Integer)  'FormWindowStateConstants)
+    Dim ws As FormWindowStateConstants: ws = Value
+    Select Case ws
+    Case vbNormal:    m_WindowState = SW_NORMAL
+    Case vbMinimized: m_WindowState = SW_MINIMIZE
+    Case vbMaximized: m_WindowState = SW_MAXIMIZE
+    End Select
+    Dim hr As Long
+    With m_Window
+        If m_hWnd Then
+            hr = ShowWindow(m_hWnd, m_WindowState)
+        End If
+    End With
 End Property
 ' ^ ############################## ^ '    OM TODO:    ' ^ ############################## ^ '
 

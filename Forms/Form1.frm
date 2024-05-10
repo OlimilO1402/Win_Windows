@@ -8,7 +8,6 @@ Begin VB.Form Form1
    LinkTopic       =   "Form2"
    ScaleHeight     =   3015
    ScaleWidth      =   4560
-   StartUpPosition =   3  'Windows-Standard
 End
 Attribute VB_Name = "Form1"
 Attribute VB_GlobalNameSpace = False
