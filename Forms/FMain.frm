@@ -125,6 +125,8 @@ End Function
 Private Sub BtnCreateWindow_Click()
     
     Set Form2 = MNew.Window("Form2") 'Got it's name/classname by the constructor function
+    
+    CopyProperties Form2, Form1
     'Form2.MinButton = False
     'Form2.MaxButton = False
     'Form2.ControlBox = False
@@ -133,15 +135,92 @@ Private Sub BtnCreateWindow_Click()
     'Form2.ScrollBars = ScrollBarConstants.vbVertical
     'Form2.WindowState = FormWindowStateConstants.vbMinimized
     'Form2.BorderStyle = vbBSNone
-    If Not Form1 Is Nothing Then
-        Dim spic As StdPicture: Set spic = Form1.Icon
-        Debug.Print PictureTypeConstants_ToStr(spic.Type)
-        'Debug.Print vbPicTypeIcon
-        Set Form2.Icon = spic
-        'Debug.Print "OK"
-    End If
+    'If Not Form1 Is Nothing Then
+    '    Dim spic As StdPicture: Set spic = Form1.Icon
+    '    Debug.Print PictureTypeConstants_ToStr(spic.Type)
+    '    'Debug.Print vbPicTypeIcon
+    '    Set Form2.Icon = spic
+    '    'Debug.Print "OK"
+    'End If
     Form2.Load
     Form2.Show
+End Sub
+
+Private Sub CopyProperties(DstWnd As Window, SrcFrm As Form1)
+Try: On Error Resume Next
+    If SrcFrm Is Nothing Then Exit Sub
+    If DstWnd Is Nothing Then Exit Sub
+    With SrcFrm
+        Set DstWnd.ActiveControl = .ActiveControl
+        DstWnd.Appearance = .Appearance
+        DstWnd.AutoRedraw = .AutoRedraw
+        DstWnd.BackColor = .BackColor
+        
+        DstWnd.BorderStyle = .BorderStyle
+        DstWnd.Style = .Style
+        DstWnd.StyleEx = .StyleEx
+        
+        DstWnd.Caption = .Caption
+        'DstWnd.ClipControls = .ClipControls
+        DstWnd.ControlBox = .ControlBox
+        'DstWnd.CurrentX = .CurrentX
+        'DstWnd.CurrentY = .CurrentY
+        'DstWnd.DrawMode = .DrawMode
+        'DstWnd.DrawStyle = .DrawStyle
+        'DstWnd.DrawWidth = .DrawWidth
+        'DstWnd.Enabled = .Enabled
+        'DstWnd.FillColor = .FillColor
+        'DstWnd.FillStyle = .FillStyle
+        Set DstWnd.Font = .Font
+        DstWnd.FontBold = .FontBold
+        DstWnd.FontItalic = .FontItalic
+        DstWnd.FontName = .FontName
+        DstWnd.FontSize = .FontSize
+        DstWnd.FontStrikethru = .FontStrikethru
+        DstWnd.FontTransparent = .FontTransparent
+        DstWnd.FontUnderline = .FontUnderline
+        'DstWnd.ForeColor = .ForeColor
+        'DstWnd.HasDC = .HasDC
+        'DstWnd.hDC = .hDC
+'        DstWnd.Height = .Height
+        'DstWnd.HelpContextID = .HelpContextID
+        Set DstWnd.Icon = .Icon
+        'Set DstWnd.Image = .Image
+        'DstWnd.KeyPreview = .KeyPreview
+'        DstWnd.Left = .Left
+        'DstWnd.LinkMode = .LinkMode
+        'DstWnd.LinkTopic = .LinkTopic
+        DstWnd.MaxButton = .MaxButton
+        DstWnd.MDIChild = .MDIChild
+        DstWnd.MinButton = .MinButton
+        Set DstWnd.MouseIcon = .MouseIcon
+        DstWnd.MousePointer = .MousePointer
+        'DstWnd.Moveable = .Moveable
+        'DstWnd.Name = .Name
+        'DstWnd.OLEDropMode = .OLEDropMode
+        'DstWnd.Palette = .Palette
+        'DstWnd.PaletteMode = .PaletteMode
+        'Set DstWnd.Picture = .Picture
+        DstWnd.RightToLeft = .RightToLeft
+        'DstWnd.ScaleHeight = .ScaleHeight
+        'DstWnd.ScaleLeft = .ScaleLeft
+        DstWnd.ScaleMode = .ScaleMode
+        'DstWnd.ScaleTop = .ScaleTop
+        'DstWnd.ScaleWidth = .ScaleWidth
+        'DstWnd.ScrollBars = .Scrollbars
+        DstWnd.ShowInTaskbar = .ShowInTaskbar
+        DstWnd.StartUpPosition = .StartUpPosition
+        DstWnd.Tag = .Tag
+        DstWnd.Text = .Caption
+'        DstWnd.Top = .Top
+        DstWnd.Visible = .Visible
+        'DstWnd.WhatsThisButton = .WhatsThisButton
+        'DstWnd.WhatsThisHelp = .WhatsThisHelp
+        'DstWnd.WhatsThisMode = .WhatsThisMode
+'        DstWnd.Width = .Width
+        'DstWnd.WindowState = .WindowState
+        'DstWnd.ZOrder = .ZOrder
+    End With
 End Sub
 
 Private Sub BtnMoveWindow_Click()
@@ -161,7 +240,9 @@ Private Sub Command1_Click()
     'Form1.WindowState = FormWindowStateConstants.vbMinimized
     'Form1.Caption = "Dies ist die Caption"
     'Form1.Visible = Not Form1.Visible
-    
+    Debug_Print1 "BorderStyle: " & Form1.BorderStyle_ToStr '& vbCrLf
+    Debug_Print1 "    Style:   " & Form1.Style_ToStr '& vbCrLf
+    Debug_Print1 "    StyleEx: " & Form1.StyleEx_ToStr '& vbCrLf
 End Sub
 
 Private Sub Command2_Click()
@@ -169,6 +250,10 @@ Private Sub Command2_Click()
     'Form2.RightToLeft = True
     'Form2.Caption = "Dies ist die Caption"
     'Form2.Visible = Not Form2.Visible
+End Sub
+
+Private Sub Command3_Click()
+
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)

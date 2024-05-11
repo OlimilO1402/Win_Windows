@@ -8,6 +8,7 @@ Module=MMain; Modules\MMain.bas
 Module=MPtr; ..\Ptr_Pointers\Modules\MPtr.bas
 Module=MErr; ..\Err_CorrectErrorHandling\Modules\MErr.bas
 Module=MWindow; Modules\MWindow.bas
+Module=MIDC; Modules\MIDC.bas
 IconForm="FMain"
 Startup="Sub Main"
 HelpFile=""

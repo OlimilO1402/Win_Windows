@@ -234,17 +234,26 @@ Public Enum EWinMsg
 End Enum
 
 
-Private Const WA_INACTIVE    As Long = 0 '    Deaktiviert.
-Private Const WA_ACTIVE      As Long = 1 '    Aktiviert durch eine andere Methode als einen Mausklick (z. B. durch einen Aufruf der SetActiveWindow-Funktion oder durch Die Verwendung der Tastaturschnittstelle zum Auswählen des Fensters).
-Private Const WA_CLICKACTIVE As Long = 2 '    Durch Einen Mausklick aktiviert.
+Private Const WA_INACTIVE    As Long = 0   '    Deaktiviert.
+Private Const WA_ACTIVE      As Long = 1   '    Aktiviert durch eine andere Methode als einen Mausklick (z. B. durch einen Aufruf der SetActiveWindow-Funktion oder durch Die Verwendung der Tastaturschnittstelle zum Auswählen des Fensters).
+Private Const WA_CLICKACTIVE As Long = 2   '    Durch Einen Mausklick aktiviert.
 
-    
+
+'Private Const GWL_WNDPROC    As Long = (–4&)  '    Ruft die Adresse der Fensterprozedur oder ein Handle ab, das die Adresse der Fensterprozedur darstellt. Sie müssen die CallWindowProc-Funktion verwenden, um die Fensterprozedur aufzurufen.
+'Private Const GWL_HINSTANCE  As Long = (–6&)  '    Ruft ein Handle für die anwendung instance ab.
+'Private Const GWL_HWNDPARENT As Long = (-8&)  '    Ruft ggf. ein Handle für das übergeordnete Fenster ab.
+'Private Const GWL_ID         As Long = (-12&) '    Ruft den Bezeichner des Fensters ab.
+'Private Const GWL_STYLE      As Long = (-16&) '    Ruft die Fensterstile ab.
+'Private Const GWL_EXSTYLE    As Long = (-20&) '    Ruft die erweiterten Fensterstile ab.
+'Private Const GWL_USERDATA   As Long = (-21&) '    Ruft die dem Fenster zugeordneten Benutzerdaten ab. Diese Daten sind für die Verwendung durch die Anwendung vorgesehen, die das Fenster erstellt hat. Sein Wert ist anfänglich 0 (null).
 
 #If VBA7 Then
     
     'Private Declare PtrSafe Function TranslateMessage Lib "user32" (lpMsg As MSG) As Long
     
     Private Declare PtrSafe Function DefWindowProcW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
+    Private Declare PtrSafe Function GetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+    Private Declare PtrSafe Function SetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
     
 #Else
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-translatemessage
@@ -253,7 +262,12 @@ Private Const WA_CLICKACTIVE As Long = 2 '    Durch Einen Mausklick aktiviert.
     
     'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-defwindowprocw
     Private Declare Function DefWindowProcW Lib "user32" (ByVal hWnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
-       
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getwindowlongw
+    'LONG GetWindowLongW([in] HWND hWnd, [in] int  nIndex);
+    Private Declare Function GetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+    Private Declare Function SetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+
 #End If
 
 Private m_Atoms   As Collection
@@ -716,3 +730,101 @@ Public Function GetEnumWM() As String
     Clipboard.Clear
     Clipboard.SetText sEnum
 End Function
+
+'    Private Declare Function GetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long) As Long
+'    Private Declare Function SetWindowLongW Lib "user32" (ByVal hWnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+'Private Const GWL_WNDPROC    As Long = –4  '    Ruft die Adresse der Fensterprozedur oder ein Handle ab, das die Adresse der Fensterprozedur darstellt. Sie müssen die CallWindowProc-Funktion verwenden, um die Fensterprozedur aufzurufen.
+'Private Const GWL_HINSTANCE  As Long = –6  '    Ruft ein Handle für die anwendung instance ab.
+'Private Const GWL_HWNDPARENT As Long = -8  '    Ruft ggf. ein Handle für das übergeordnete Fenster ab.
+'Private Const GWL_ID         As Long = -12 '    Ruft den Bezeichner des Fensters ab.
+'Private Const GWL_STYLE      As Long = -16 '    Ruft die Fensterstile ab.
+'Private Const GWL_EXSTYLE    As Long = -20 '    Ruft die erweiterten Fensterstile ab.
+'Private Const GWL_USERDATA   As Long = -21 '    Ruft die dem Fenster zugeordneten Benutzerdaten ab. Diese Daten sind für die Verwendung durch die Anwendung vorgesehen, die das Fenster erstellt hat. Sein Wert ist anfänglich 0 (null).
+
+Public Property Get WindowStyle(ByVal ahWnd As LongPtr) As Long
+    WindowStyle = GetWindowLongW(ahWnd, (-16&)) 'GWL_STYLE)
+End Property
+Public Property Let WindowStyle(ByVal ahWnd As LongPtr, ByVal Value As Long)
+    Dim hr As Long: hr = SetWindowLongW(ahWnd, (-16&), Value) 'GWL_STYLE, Value)
+End Property
+
+Public Property Get WindowStyleEx(ByVal ahWnd As LongPtr) As Long
+    WindowStyleEx = GetWindowLongW(ahWnd, (-20&)) 'GWL_EXSTYLE)
+End Property
+Public Property Let WindowStyleEx(ByVal ahWnd As LongPtr, ByVal Value As Long)
+    Dim hr As Long: hr = SetWindowLongW(ahWnd, (-20&), Value) 'GWL_EXSTYLE, Value)
+End Property
+
+
+Public Function EWndStyle_ToStr(e As EWndStyle) As String
+    Dim sOr As String: sOr = " Or "
+    Dim s As String
+    If e And WS_TILED Then s = s & IIf(Len(s), sOr, "") & "WS_TILED"
+    If e And WS_OVERLAPPED Then s = s & IIf(Len(s), sOr, "") & "WS_OVERLAPPED"
+
+    If e And WS_MAXIMIZEBOX Then s = s & IIf(Len(s), sOr, "") & "WS_MAXIMIZEBOX"
+    If e And WS_TABSTOP Then s = s & IIf(Len(s), sOr, "") & "WS_TABSTOP"
+    If e And WS_GROUP Then s = s & IIf(Len(s), sOr, "") & "WS_GROUP"
+    If e And WS_MINIMIZEBOX Then s = s & IIf(Len(s), sOr, "") & "WS_MINIMIZEBOX"
+    If e And WS_SIZEBOX Then s = s & IIf(Len(s), sOr, "") & "WS_SIZEBOX"
+    If e And WS_THICKFRAME Then s = s & IIf(Len(s), sOr, "") & "WS_THICKFRAME"
+    If e And WS_SYSMENU Then s = s & IIf(Len(s), sOr, "") & "WS_SYSMENU"
+
+    If e And WS_HSCROLL Then s = s & IIf(Len(s), sOr, "") & "WS_HSCROLL"
+    If e And WS_VSCROLL Then s = s & IIf(Len(s), sOr, "") & "WS_VSCROLL"
+    If e And WS_DLGFRAME Then s = s & IIf(Len(s), sOr, "") & "WS_DLGFRAME"
+    If e And WS_BORDER Then s = s & IIf(Len(s), sOr, "") & "WS_BORDER"
+    If e And WS_CAPTION Then s = s & IIf(Len(s), sOr, "") & "WS_CAPTION"
+
+    If e And WS_MAXIMIZE Then s = s & IIf(Len(s), sOr, "") & "WS_MAXIMIZE"
+    If e And WS_CLIPCHILDREN Then s = s & IIf(Len(s), sOr, "") & "WS_CLIPCHILDREN"
+    If e And WS_CLIPSIBLINGS Then s = s & IIf(Len(s), sOr, "") & "WS_CLIPSIBLINGS"
+    If e And WS_DISABLED Then s = s & IIf(Len(s), sOr, "") & "WS_DISABLED"
+
+    If e And WS_VISIBLE Then s = s & IIf(Len(s), sOr, "") & "WS_VISIBLE"
+    If e And WS_ICONIC Then s = s & IIf(Len(s), sOr, "") & "WS_ICONIC"
+    If e And WS_MINIMIZE Then s = s & IIf(Len(s), sOr, "") & "WS_MINIMIZE"
+    If e And WS_CHILD Then s = s & IIf(Len(s), sOr, "") & "WS_CHILD"
+    If e And WS_CHILDWINDOW Then s = s & IIf(Len(s), sOr, "") & "WS_CHILDWINDOW"
+    If e And WS_POPUP Then s = s & IIf(Len(s), sOr, "") & "WS_POPUP"
+    EWndStyle_ToStr = s
+End Function
+
+Public Function EWndStyleEx_ToStr(e As EWndStyleEx) As String
+    Dim sOr As String: sOr = " Or "
+    Dim s As String
+    If e And WS_EX_LEFT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LEFT"
+    If e And WS_EX_LTRREADING Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LTRREADING"
+    If e And WS_EX_RIGHTSCROLLBAR Then s = s & IIf(Len(s), sOr, "") & "WS_EX_RIGHTSCROLLBAR"
+    If e And WS_EX_DLGMODALFRAME Then s = s & IIf(Len(s), sOr, "") & "WS_EX_DLGMODALFRAME"
+
+    If e And WS_EX_NOPARENTNOTIFY Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOPARENTNOTIFY"
+    If e And WS_EX_TOPMOST Then s = s & IIf(Len(s), sOr, "") & "WS_EX_TOPMOST"
+
+    If e And WS_EX_ACCEPTFILES Then s = s & IIf(Len(s), sOr, "") & "WS_EX_ACCEPTFILES"
+    If e And WS_EX_TRANSPARENT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_TRANSPARENT"
+    If e And WS_EX_MDICHILD Then s = s & IIf(Len(s), sOr, "") & "WS_EX_MDICHILD"
+    If e And WS_EX_TOOLWINDOW Then s = s & IIf(Len(s), sOr, "") & "WS_EX_TOOLWINDOW"
+
+    If e And WS_EX_WINDOWEDGE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_WINDOWEDGE"
+    If e And WS_EX_CLIENTEDGE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_CLIENTEDGE"
+    If e And WS_EX_CONTEXTHELP Then s = s & IIf(Len(s), sOr, "") & "WS_EX_CONTEXTHELP"
+
+    If e And WS_EX_RIGHT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_RIGHT"
+    If e And WS_EX_RTLREADING Then s = s & IIf(Len(s), sOr, "") & "WS_EX_RTLREADING"
+    If e And WS_EX_LEFTSCROLLBAR Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LEFTSCROLLBAR"
+
+    If e And WS_EX_CONTROLPARENT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_CONTROLPARENT"
+    If e And WS_EX_STATICEDGE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_STATICEDGE"
+    If e And WS_EX_APPWINDOW Then s = s & IIf(Len(s), sOr, "") & "WS_EX_APPWINDOW"
+    If e And WS_EX_LAYERED Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LAYERED"
+
+    If e And WS_EX_NOINHERITLAYOUT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOINHERITLAYOUT"
+    If e And WS_EX_NOREDIRECTIONBITMAP Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOREDIRECTIONBITMAP"
+    If e And WS_EX_LAYOUTRTL Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LAYOUTRTL"
+
+    If e And WS_EX_COMPOSITED Then s = s & IIf(Len(s), sOr, "") & "WS_EX_COMPOSITED"
+    If e And WS_EX_NOACTIVATE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOACTIVATE"
+    EWndStyleEx_ToStr = s
+End Function
+

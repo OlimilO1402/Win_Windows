@@ -6,6 +6,7 @@ Begin VB.Form Form1
    ClientTop       =   465
    ClientWidth     =   4560
    LinkTopic       =   "Form2"
+   MousePointer    =   5  'Größenänderung
    ScaleHeight     =   3015
    ScaleWidth      =   4560
 End
@@ -46,6 +47,66 @@ Event QueryUnload(Cancel As Integer, UnloadMode As Integer)
 Event Resize()
 Event Terminate()
 Event Unload(Cancel As Integer)
+
+'
+Public Property Get Style() As EWndStyle
+    Style = MWindow.WindowStyle(Me.hWnd)
+End Property
+Public Property Let Style(ByVal Value As EWndStyle)
+    MWindow.WindowStyle(Me.hWnd) = Value
+End Property
+Public Function Style_ToStr() As String
+    Style_ToStr = MWindow.EWndStyle_ToStr(Me.Style)
+End Function
+
+Public Property Get StyleEx() As EWndStyleEx
+    StyleEx = MWindow.WindowStyleEx(Me.hWnd)
+End Property
+Public Property Let StyleEx(ByVal Value As EWndStyleEx)
+    MWindow.WindowStyleEx(Me.hWnd) = Value
+End Property
+Public Function StyleEx_ToStr() As String
+    StyleEx_ToStr = MWindow.EWndStyleEx_ToStr(Me.StyleEx)
+End Function
+
+'BorderStyle: vbBSNone
+'    Style:   WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx:
+'
+'BorderStyle: vbFixedSingle
+'    Style:   WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+'
+'BorderStyle: vbSizable
+'    Style:   WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+'
+'BorderStyle: vbFixedDialog
+'    Style:   WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_DLGMODALFRAME Or WS_EX_WINDOWEDGE
+'
+'BorderStyle: vbFixedToolWindow
+'    Style:   WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_TOOLWINDOW Or WS_EX_WINDOWEDGE
+'
+'BorderStyle: vbSizableToolWindow
+'    Style:   WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_TOOLWINDOW Or WS_EX_WINDOWEDGE
+
+Public Function BorderStyle_ToStr() As String
+    Dim s As String
+    Dim e As FormBorderStyleConstants: e = Me.BorderStyle
+    Select Case e
+    Case vbBSNone:            s = "vbBSNone"            ' 0
+    Case vbFixedSingle:       s = "vbFixedSingle"       ' 1
+    Case vbSizable:           s = "vbSizable"           ' 2
+    Case vbFixedDialog:       s = "vbFixedDialog"       ' 3
+    Case vbFixedToolWindow:   s = "vbFixedToolWindow"   ' 4
+    Case vbSizableToolWindow: s = "vbSizableToolWindow" ' 5
+    End Select
+    BorderStyle_ToStr = s
+End Function
+
 
 Private Sub Form_Activate()
     RaiseEvent Activate

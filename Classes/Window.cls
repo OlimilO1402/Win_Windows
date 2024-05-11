@@ -26,6 +26,7 @@ Public Enum EClsStyle
     CS_BYTEALIGNWINDOW = &H2000&  '    Richtet das Fenster an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
     CS_GLOBALCLASS = &H4000&      '    Gibt an, dass die Fensterklasse eine globale Anwendungsklasse ist. Weitere Informationen finden Sie im Abschnitt "Globale Anwendungsklassen" unter Informationen zu Fensterklassen.
     CS_DROPSHADOW = &H20000       '    Aktiviert den Schlagschatteneffekt für ein Fenster. Der Effekt wird über SPI_SETDROPSHADOW ein- und ausgeschaltet. In der Regel ist dies für kleine, kurzlebige Fenster wie Menüs aktiviert, um ihre Z-Reihenfolge-Beziehung zu anderen Fenstern hervorzuheben. Fenster, die aus einer Klasse mit diesem Stil erstellt werden, müssen Fenster der obersten Ebene sein. Sie dürfen keine Kinderfenster sein.
+    VBFormClassStyleDefault = CS_VREDRAW Or CS_PARENTDC Or CS_OWNDC Or CS_HREDRAW
 End Enum
 
 'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -91,7 +92,38 @@ Public Enum EWndStyle
     WS_POPUPWINDOW = (WS_POPUP Or WS_BORDER Or WS_SYSMENU)       'Das Fenster ist ein Popupfenster. Die Formatvorlagen WS_CAPTION und WS_POPUPWINDOW müssen kombiniert werden, um das Fenstermenü sichtbar zu machen.
     WS_TILEDWINDOW = (WS_OVERLAPPED Or WS_CAPTION Or WS_SYSMENU Or WS_THICKFRAME Or WS_MINIMIZEBOX Or WS_MAXIMIZEBOX)           ' Das Fenster ist ein überlappende Fenster. Identisch mit dem WS_OVERLAPPEDWINDOW Stil.
     WS_OVERLAPPEDWINDOW = (WS_OVERLAPPED Or WS_CAPTION Or WS_SYSMENU Or WS_THICKFRAME Or WS_MINIMIZEBOX Or WS_MAXIMIZEBOX) 'Das Fenster ist ein überlappende Fenster. Identisch mit dem WS_TILEDWINDOW Stil.
-    VBFormStyle = WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+    
+    VBFormStyle_BSNone = WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+    VBFormStyle_FixedSingle = WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+    VBFormStyle_Sizable = WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+    VBFormStyle_FixedDialog = WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+    VBFormStyle_FixedToolWindow = WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+    VBFormStyle_SizableToolWindow = WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+
+'BorderStyle: vbBSNone = 0
+'    Style:   WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx:
+'
+'BorderStyle: vbFixedSingle = 1
+'    Style:   WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+'
+'BorderStyle: vbSizable = 2
+'    Style:   WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+'
+'BorderStyle: vbFixedDialog = 3
+'    Style:   WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_DLGMODALFRAME Or WS_EX_WINDOWEDGE
+'
+'BorderStyle: vbFixedToolWindow = 4
+'    Style:   WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_TOOLWINDOW Or WS_EX_WINDOWEDGE
+'
+'BorderStyle: vbSizableToolWindow = 5
+'    Style:   WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
+'    StyleEx: WS_EX_TOOLWINDOW Or WS_EX_WINDOWEDGE
+        
 End Enum
 
 'dwExStyle
@@ -130,7 +162,14 @@ Public Enum EWndStyleEx
     WS_EX_NOACTIVATE = &H8000000           '   Ein Fenster der obersten Ebene, das mit dieser Formatvorlage erstellt wurde, wird nicht zum Vordergrundfenster, wenn der Benutzer darauf klickt. Das System bringt dieses Fenster nicht in den Vordergrund, wenn der Benutzer das Vordergrundfenster minimiert oder schließt. Das Fenster sollte nicht durch programmgesteuerten Zugriff oder über die Tastaturnavigation durch barrierefreie Technologien wie die Sprachausgabe aktiviert werden. Verwenden Sie zum Aktivieren des Fensters die Funktion SetActiveWindow oder SetForegroundWindow . Das Fenster wird standardmäßig nicht auf der Taskleiste angezeigt. Um zu erzwingen, dass das Fenster auf der Taskleiste angezeigt wird, verwenden Sie die WS_EX_APPWINDOW Stil.
     WS_EX_OVERLAPPEDWINDOW = (WS_EX_WINDOWEDGE Or WS_EX_CLIENTEDGE)                     '   Das Fenster ist ein überlappende Fenster.
     WS_EX_PALETTEWINDOW = (WS_EX_WINDOWEDGE Or WS_EX_TOOLWINDOW Or WS_EX_TOPMOST)       '   Das Fenster ist ein Palettenfenster, bei dem es sich um ein modusloses Dialogfeld handelt, in dem ein Array von Befehlen angezeigt wird.
-    VBFormStyleEx = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+    
+    VBFormStyleEx_BSNone = 0
+    VBFormStyleEx_FixedSingle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+    VBFormStyleEx_Sizable = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+    VBFormStyleEx_FixedDialog = WS_EX_DLGMODALFRAME Or WS_EX_WINDOWEDGE
+    VBFormStyleEx_FixedToolWindow = WS_EX_TOOLWINDOW Or WS_EX_WINDOWEDGE
+    VBFormStyleEx_SizableToolWindow = WS_EX_TOOLWINDOW Or WS_EX_WINDOWEDGE
+    
 End Enum
 
 Public Enum EWndShowZPos
@@ -167,6 +206,26 @@ Public Enum EWndShow
     SW_SHOWDEFAULT = &H10&      ' Legt den Showstatus basierend auf dem SW_ Wert fest, der in der STARTUPINFO-Struktur angegeben ist, die von dem Programm, das die Anwendung gestartet hat, an die CreateProcess-Funktion übergeben wird.
     SW_FORCEMINIMIZE = &H11&    ' Minimiert ein Fenster, auch wenn der Thread, der das Fenster besitzt, nicht reagiert. Dieses Flag sollte nur verwendet werden, wenn Fenster aus einem anderen Thread minimiert werden.
 End Enum
+
+
+Private Const IDC_ARROW              As Long = 32512&
+Private Const IDC_IBEAM              As Long = 32513&
+Private Const IDC_WAIT               As Long = 32514&
+Private Const IDC_CROSS              As Long = 32515&
+Private Const IDC_UPARROW            As Long = 32516&
+
+Private Const IDC_SIZE               As Long = 32640&
+Private Const IDC_ICON               As Long = 32641&
+Private Const IDC_SIZENWSE           As Long = 32642&
+Private Const IDC_SIZENESW           As Long = 32643&
+Private Const IDC_SIZEWE             As Long = 32644&
+Private Const IDC_SIZENS             As Long = 32645&
+Private Const IDC_SIZEALL            As Long = 32646&
+'Private Const IDC_                   As Long = 32647&
+Private Const IDC_NO                 As Long = 32648&
+Private Const IDC_HAND               As Long = 32649&
+Private Const IDC_APPSTARTING        As Long = 32650&
+Private Const IDC_HELP               As Long = 32651&
 
 'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-createstructw
 'typedef struct tagCREATESTRUCTW {
@@ -222,6 +281,8 @@ Private Const HWND_MESSAGE As Long = -3&
     
     Private Declare PtrSafe Function RegisterClassExW Lib "user32" (pcWndClassEx As WNDCLASSEXW) As Long
 
+    Private Declare PtrSafe Function UnregisterClassW Lib "user32" (ByVal lpClassName As LongPtr, ByVal hInstance As LongPtr) As Long
+
     Private Declare PtrSafe Function CreateWindowExW Lib "user32" ( _
         ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, ByVal dwStyle As Long, _
         ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
@@ -241,6 +302,8 @@ Private Const HWND_MESSAGE As Long = -3&
 
     Private Declare PtrSafe Function GetModuleHandleW Lib "kernel32" (ByVal lpModuleName As LongPtr) As LongPtr
 
+    Private Declare PtrSafe Function LoadCursorW Lib "user32" (ByVal hInstance As LongPtr, ByVal lpCursorName As LongPtr) As LongPtr
+    
 #Else
 
     'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
@@ -253,7 +316,7 @@ Private Const HWND_MESSAGE As Long = -3&
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-unregisterclassw
     'BOOL UnregisterClassW( [in] LPCWSTR lpClassName, [in, optional] HINSTANCE hInstance);
-    Private Declare Function UnregisterClassW Lib "user32" (ByVal lpClassName As LongPtr, ByVal hInstance As Long) As Long
+    Private Declare Function UnregisterClassW Lib "user32" (ByVal lpClassName As LongPtr, ByVal hInstance As LongPtr) As Long
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-createwindowexw
     'HWND CreateWindowExW(
@@ -299,24 +362,31 @@ Private Const HWND_MESSAGE As Long = -3&
     'https://learn.microsoft.com/de-de/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlew
     'HMODULE GetModuleHandleW( [in, optional] LPCWSTR lpModuleName );
     Private Declare Function GetModuleHandleW Lib "kernel32" (ByVal lpModuleName As LongPtr) As LongPtr
-                 
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-loadcursorw
+    'HCURSOR LoadCursorW( [in, optional] HINSTANCE hInstance, [in] LPCWSTR lpCursorName);
+    Private Declare Function LoadCursorW Lib "user32" (ByVal hInstance As LongPtr, ByVal lpCursorName As LongPtr) As LongPtr
+    
 #End If
 
-Private m_Name        As String
-Private m_Caption     As String
-Private m_ClsName     As String
-Private m_WndCls      As WNDCLASSEXW
-Private m_ClsAtom     As LongPtr
-Private m_Window      As CREATESTRUCTW
-Private m_hWnd        As LongPtr
-Private m_hDC         As LongPtr
-Private m_Tag         As Variant
-Private m_ScaleMode   As ScaleModeConstants
-Private m_WindowState As EWndShow
-Private m_Controls    As Collection
-Private m_ActControl  As Object
-Private m_Font        As StdFont
-Private m_Icon        As StdPicture 'IPictureDisp
+Private m_Name         As String
+Private m_Caption      As String
+Private Const ClsName  As String = "ThunderVB64uWindow"
+Private m_ClsName      As String
+Private m_WndCls       As WNDCLASSEXW
+Private m_ClsAtom      As LongPtr
+Private m_Window       As CREATESTRUCTW
+Private m_hWnd         As LongPtr
+Private m_hDC          As LongPtr
+Private m_Tag          As Variant
+Private m_ScaleMode    As ScaleModeConstants
+Private m_WindowState  As EWndShow
+Private m_Controls     As Collection
+Private m_ActControl   As Object
+Private m_Font         As StdFont
+Private m_Icon         As StdPicture 'IPictureDisp
+Private m_MouseIcon    As StdPicture 'IPictureDisp
+Private m_MousePointer As Long ' = IDC_
 
 Public Event Activate()
 Public Event Click()
@@ -357,27 +427,25 @@ End Function
 Private Sub Class_Initialize()
     m_WindowState = SW_NORMAL
     m_Name = "Window"
-    m_ClsName = "ThunderVB64uWindow"
+    m_ClsName = ClsName
     m_Caption = "Form"
-    If Not Register Then
-        'MsgBox "Could not register class: " & m_ClsName
-        'Exit Sub
-    End If
     Dim cap As String: cap = m_Caption & vbNullChar
     With m_Window
         .lpszName = StrPtr(cap)
         .hInstance = GethInstance 'App.hInstance
-        .Style = VBFormStyle
-        .dwExStyle = VBFormStyleEx ' WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or _
+        .Style = EWndStyle.VBFormStyle_Sizable
+        .dwExStyle = EWndStyle.VBFormStyle_Sizable
+        '         WS_MAXIMIZEBOX Or WS_TABSTOP Or WS_GROUP Or WS_MINIMIZEBOX Or _
         '         WS_SIZEBOX Or WS_THICKFRAME Or WS_SYSMENU Or WS_DLGFRAME Or WS_BORDER Or _
         '         WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
-        '.dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
+        .dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
         'default position and size
         .X = 33
         .Y = 26
         .cx = 320 'px VB-default
         .cy = 240 'px VB-default
     End With
+    m_MousePointer = IDC_ARROW
 End Sub
 
 Private Sub Class_Terminate()
@@ -403,36 +471,40 @@ Private Sub Destroy()
     End If
 End Sub
 
-Friend Sub New_(ByVal Name As String, Optional ByVal Caption As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx)
+Friend Sub New_(ByVal Name As String, Optional ByVal Caption As String, Optional ByVal Style As EWndStyle = EWndStyle.VBFormStyle_Sizable, Optional ByVal StyleEx As EWndStyleEx = EWndStyleEx.VBFormStyleEx_Sizable, Optional ByVal ClsStyle As EClsStyle = EClsStyle.VBFormClassStyleDefault)
     m_Name = Name
-    m_ClsName = m_ClsName & Name
+    m_ClsName = ClsName & Name
     m_Caption = IIf(Len(Caption), Caption, m_Name)
     Dim cap As String: cap = m_Caption & vbNullChar
     With m_Window
-        '.hInstance = GethInstance 'App.hInstance
         .lpszName = StrPtr(cap)
         .Style = Style
         .dwExStyle = StyleEx
-        '.Style = WS_OVERLAPPEDWINDOW
-        '.dwExStyle = 0
-        '.lpCreateParams = ObjPtr(Me)
-        'Debug.Print "ObjPtr(Me) = " & .lpCreateParams
+    End With
+    With m_WndCls
+        .Style = ClsStyle
     End With
 End Sub
 
 Private Function Register() As Boolean
     'preparing the wnd-class-struct
+    Dim cln As String: cln = m_ClsName & vbNullChar
+    Debug.Print m_ClsName
     With m_WndCls
         .cbSize = LenB(m_WndCls) '48?
-        '.lpszClassName = StrPtr(m_ClsName)
-        '.lpszClassName = m_ClsAtom
+        .lpszClassName = StrPtr(cln)
         .lpfnWndProc = FncPtr(AddressOf MWindow.WndProc)
         .hInstance = GethInstance 'App.hInstance
-        '.Style = CS_VREDRAW Or CS_PARENTDC Or CS_OWNDC Or CS_HREDRAW
         '.cbClsExtra
         '.cbWndExtra
         '.hbrBackground
-        '.hCursor
+        If m_MouseIcon Is Nothing Then
+            .hCursor = LoadCursorW(0, m_MousePointer)
+        Else
+            If m_MouseIcon.Handle = 0 Then
+                .hCursor = LoadCursorW(0, m_MousePointer)
+            End If
+        End If
         '.hIcon
         '.hIconSm
         '.lpszMenuName
@@ -477,6 +549,10 @@ End Function
 
 Public Sub Load()
 'Try: On Error GoTo Catch
+    If Not Register Then
+        'MsgBox "Could not register class: " & m_ClsName
+        'Exit Sub
+    End If
     With m_Window
         .lpszClass = m_ClsAtom
         m_hWnd = CreateWindowExW(.dwExStyle, .lpszClass, .lpszName, .Style, .X, .Y, .cx, .cy, .hwndParent, .hMenu, .hInstance, ByVal .lpCreateParams)
@@ -575,17 +651,27 @@ Public Property Get BorderStyle() As FormBorderStyleConstants
     'WS_DLGFRAME   = &H400000        '  Das Fenster verfügt über einen Rahmen eines Stils, der in der Regel mit Dialogfeldern verwendet wird.
                                      '  Ein Fenster mit dieser Formatvorlage kann keine Titelleiste aufweisen.
     'WS_BORDER     = &H800000        '  Das Fenster verfügt über einen dünnen Rahmen
-    m_Window.Style = m_Window.Style
+    Dim bs As FormBorderStyleConstants
+    Dim ws As EWndStyle: ws = m_Window.Style
+    Select Case ws
+    Case EWndStyle.VBFormStyle_BSNone: bs = vbBSNone
+    Case EWndStyle.VBFormStyle_FixedSingle: bs = vbFixedSingle
+    Case EWndStyle.VBFormStyle_Sizable: bs = vbSizable
+    Case EWndStyle.VBFormStyle_FixedDialog: bs = vbFixedDialog
+    Case EWndStyle.VBFormStyle_FixedToolWindow: bs = vbFixedToolWindow
+    Case EWndStyle.VBFormStyle_SizableToolWindow: bs = vbSizableToolWindow
+    End Select
+    BorderStyle = bs
 End Property
 Public Property Let BorderStyle(ByVal Value As FormBorderStyleConstants)
     With m_Window
         Select Case Value
-        Case FormBorderStyleConstants.vbBSNone:            .Style = .Style And WS_DLGFRAME
-        Case FormBorderStyleConstants.vbFixedDialog:       .Style = .Style And WS_DLGFRAME
-        Case FormBorderStyleConstants.vbFixedSingle:       .Style = .Style And WS_BORDER
-        Case FormBorderStyleConstants.vbFixedToolWindow:   .Style = .Style And WS_DLGFRAME
-        Case FormBorderStyleConstants.vbSizable:           .Style = .Style And WS_SIZEBOX
-        Case FormBorderStyleConstants.vbSizableToolWindow: .Style = .Style And WS_DLGFRAME
+        Case FormBorderStyleConstants.vbBSNone:            .Style = EWndStyle.VBFormStyle_BSNone:            .dwExStyle = EWndStyleEx.VBFormStyleEx_BSNone
+        Case FormBorderStyleConstants.vbFixedSingle:       .Style = EWndStyle.VBFormStyle_FixedSingle:       .dwExStyle = EWndStyleEx.VBFormStyleEx_FixedSingle
+        Case FormBorderStyleConstants.vbSizable:           .Style = EWndStyle.VBFormStyle_Sizable:           .dwExStyle = EWndStyleEx.VBFormStyleEx_Sizable
+        Case FormBorderStyleConstants.vbFixedDialog:       .Style = EWndStyle.VBFormStyle_FixedDialog:       .dwExStyle = EWndStyleEx.VBFormStyleEx_FixedDialog
+        Case FormBorderStyleConstants.vbFixedToolWindow:   .Style = EWndStyle.VBFormStyle_FixedToolWindow:   .dwExStyle = EWndStyleEx.VBFormStyleEx_FixedToolWindow
+        Case FormBorderStyleConstants.vbSizableToolWindow: .Style = EWndStyle.VBFormStyle_SizableToolWindow: .dwExStyle = EWndStyleEx.VBFormStyleEx_SizableToolWindow
         End Select
     End With
 End Property
@@ -842,8 +928,100 @@ Public Property Let MDIChild(ByVal Value As Boolean)
     If Not Value Then m_Window.dwExStyle = m_Window.dwExStyle Xor WS_EX_MDICHILD
 End Property
 
-Public Property Get MouseIcon() As IPictureDisp: End Property
-Public Property Get MousePointer() As Integer: End Property
+Public Property Get MouseIcon() As StdPicture 'IPictureDisp
+    Set MouseIcon = m_MouseIcon
+End Property
+Public Property Set MouseIcon(ByVal Value As StdPicture) 'IPictureDisp)
+    Set m_MouseIcon = Value
+    If m_MouseIcon Is Nothing Then Exit Property
+    m_WndCls.hCursor = m_MouseIcon.Handle
+End Property
+
+'Public Const IDC_ARROW              As Long = 32512&
+'Public Const IDC_IBEAM              As Long = 32513&
+'Public Const IDC_WAIT               As Long = 32514&
+'Public Const IDC_CROSS              As Long = 32515&
+'Public Const IDC_UPARROW            As Long = 32516&
+'Public Const IDC_SIZE               As Long = 32640&
+'Public Const IDC_ICON               As Long = 32641&
+'Public Const IDC_SIZENWSE           As Long = 32642&
+'Public Const IDC_SIZENESW           As Long = 32643&
+'Public Const IDC_SIZEWE             As Long = 32644&
+'Public Const IDC_SIZENS             As Long = 32645&
+'Public Const IDC_SIZEALL            As Long = 32646&
+''Public Const IDC_                   As Long = 32647&
+'Public Const IDC_NO                 As Long = 32648&
+'Public Const IDC_HAND               As Long = 32649&
+'Public Const IDC_APPSTARTING        As Long = 32650&
+'Public Const IDC_HELP               As Long = 32651&
+'Enum MousePointerConstants
+'    vbDefault = 0
+'    vbArrow = 1
+'    vbCrosshair = 2
+'    vbIbeam = 3
+'    vbIconPointer = 4
+'    vbSizePointer = 5
+'    vbSizeNESW = 6
+'    vbSizeNS = 7
+'    vbSizeNWSE = 8
+'    vbSizeWE = 9
+'    vbUpArrow = 10
+'    vbHourglass = 11
+'    vbNoDrop = 12
+'    vbArrowHourglass = 13
+'    vbArrowQuestion = 14
+'    vbSizeAll = 15
+'    vbCustom = 99 ' (&H63)
+'End Enum
+
+Public Property Get MousePointer() As Integer 'MousePointerConstants
+    Dim idmp As Long: idmp = m_MousePointer
+    Dim mp   As MousePointerConstants
+    Select Case idmp
+    Case 0:               mp = MousePointerConstants.vbArrow
+    Case IDC_ARROW:       mp = MousePointerConstants.vbArrow
+    Case IDC_IBEAM:       mp = MousePointerConstants.vbIbeam
+    Case IDC_CROSS:       mp = MousePointerConstants.vbCrosshair
+    Case IDC_UPARROW:     mp = MousePointerConstants.vbUpArrow
+    Case IDC_SIZE:        mp = MousePointerConstants.vbSizeAll
+    Case IDC_ICON:        mp = MousePointerConstants.vbIconPointer
+    Case IDC_SIZENWSE:    mp = MousePointerConstants.vbSizeNWSE
+    Case IDC_SIZENESW:    mp = MousePointerConstants.vbSizeNESW
+    Case IDC_SIZEWE:      mp = MousePointerConstants.vbSizeWE
+    Case IDC_SIZENS:      mp = MousePointerConstants.vbSizeNS
+    Case IDC_SIZEALL:     mp = MousePointerConstants.vbSizeAll
+    Case IDC_WAIT:        mp = MousePointerConstants.vbHourglass
+    Case IDC_NO:          mp = MousePointerConstants.vbNoDrop
+    Case IDC_APPSTARTING: mp = MousePointerConstants.vbArrowHourglass
+    Case IDC_HELP:        mp = MousePointerConstants.vbArrowQuestion
+    Case Else:            mp = MousePointerConstants.vbCustom
+    End Select
+End Property
+Public Property Let MousePointer(ByVal Value As Integer) 'MousePointerConstants)
+    Dim mp   As MousePointerConstants: mp = Value
+    Dim idmp As Long
+    Select Case mp
+    Case MousePointerConstants.vbArrow:          idmp = IDC_ARROW
+    Case MousePointerConstants.vbIbeam:          idmp = IDC_IBEAM
+    Case MousePointerConstants.vbCrosshair:      idmp = IDC_CROSS
+    Case MousePointerConstants.vbUpArrow:        idmp = IDC_UPARROW
+    Case MousePointerConstants.vbSizePointer:    idmp = IDC_SIZEALL 'IDC_SIZE
+    Case MousePointerConstants.vbIconPointer:    idmp = IDC_ICON
+         If m_MouseIcon Is Nothing Then idmp = IDC_ARROW Else If m_MouseIcon.Handle = 0 Then idmp = IDC_ARROW
+    Case MousePointerConstants.vbSizeNWSE:       idmp = IDC_SIZENWSE
+    Case MousePointerConstants.vbSizeNESW:       idmp = IDC_SIZENESW
+    Case MousePointerConstants.vbSizeWE:         idmp = IDC_SIZEWE
+    Case MousePointerConstants.vbSizeNS:         idmp = IDC_SIZENS
+    Case MousePointerConstants.vbSizeAll:        idmp = IDC_SIZEALL
+    Case MousePointerConstants.vbHourglass:      idmp = IDC_WAIT
+    Case MousePointerConstants.vbNoDrop:         idmp = IDC_NO
+    Case MousePointerConstants.vbArrowHourglass: idmp = IDC_APPSTARTING
+    Case MousePointerConstants.vbArrowQuestion:  idmp = IDC_HELP
+    Case Else:
+    End Select
+    m_MousePointer = idmp
+End Property
+
 'Public Sub Move(): End Sub
 Public Property Get Moveable() As Boolean: End Property
 
@@ -1028,10 +1206,24 @@ End Sub
 Public Property Get Style() As EWndStyle
     Style = m_Window.Style
 End Property
+Public Property Let Style(ByVal Value As EWndStyle)
+    m_Window.Style = Value
+    If m_hWnd Then MWindow.WindowStyle(m_hWnd) = Value
+End Property
+Public Function Style_ToStr() As String
+    Style_ToStr = MWindow.EWndStyle_ToStr(Me.Style)
+End Function
 
-Public Property Get StyleEx() As EWndStyle
+Public Property Get StyleEx() As EWndStyleEx
     StyleEx = m_Window.dwExStyle
 End Property
+Public Property Let StyleEx(ByVal Value As EWndStyleEx)
+    m_Window.dwExStyle = Value
+    If m_hWnd Then MWindow.WindowStyleEx(m_hWnd) = Value
+End Property
+Public Function StyleEx_ToStr() As String
+    StyleEx_ToStr = MWindow.EWndStyleEx_ToStr(Me.StyleEx)
+End Function
 
 Public Property Get hWnd() As LongPtr
     hWnd = m_hWnd
@@ -1119,78 +1311,6 @@ Friend Sub OnQueryUnload(Cancel As Integer, UnloadMode As Integer):             
 Friend Sub OnResize():                                                                 RaiseEvent Resize:                                                                                                        End Sub
 Friend Sub OnTerminate():                                                              RaiseEvent Terminate:                                                                                                     End Sub
 Friend Sub OnUnload(Cancel As Integer):                                                RaiseEvent Unload(Cancel):                                                                                                End Sub
-
-Private Function EWndStyle_ToStr(e As EWndStyle) As String
-    Dim sOr As String: sOr = " Or "
-    Dim s As String
-    If e And WS_TILED Then s = s & IIf(Len(s), sOr, "") & "WS_TILED"
-    If e And WS_OVERLAPPED Then s = s & IIf(Len(s), sOr, "") & "WS_OVERLAPPED"
-
-    If e And WS_MAXIMIZEBOX Then s = s & IIf(Len(s), sOr, "") & "WS_MAXIMIZEBOX"
-    If e And WS_TABSTOP Then s = s & IIf(Len(s), sOr, "") & "WS_TABSTOP"
-    If e And WS_GROUP Then s = s & IIf(Len(s), sOr, "") & "WS_GROUP"
-    If e And WS_MINIMIZEBOX Then s = s & IIf(Len(s), sOr, "") & "WS_MINIMIZEBOX"
-    If e And WS_SIZEBOX Then s = s & IIf(Len(s), sOr, "") & "WS_SIZEBOX"
-    If e And WS_THICKFRAME Then s = s & IIf(Len(s), sOr, "") & "WS_THICKFRAME"
-    If e And WS_SYSMENU Then s = s & IIf(Len(s), sOr, "") & "WS_SYSMENU"
-
-    If e And WS_HSCROLL Then s = s & IIf(Len(s), sOr, "") & "WS_HSCROLL"
-    If e And WS_VSCROLL Then s = s & IIf(Len(s), sOr, "") & "WS_VSCROLL"
-    If e And WS_DLGFRAME Then s = s & IIf(Len(s), sOr, "") & "WS_DLGFRAME"
-    If e And WS_BORDER Then s = s & IIf(Len(s), sOr, "") & "WS_BORDER"
-    If e And WS_CAPTION Then s = s & IIf(Len(s), sOr, "") & "WS_CAPTION"
-
-    If e And WS_MAXIMIZE Then s = s & IIf(Len(s), sOr, "") & "WS_MAXIMIZE"
-    If e And WS_CLIPCHILDREN Then s = s & IIf(Len(s), sOr, "") & "WS_CLIPCHILDREN"
-    If e And WS_CLIPSIBLINGS Then s = s & IIf(Len(s), sOr, "") & "WS_CLIPSIBLINGS"
-    If e And WS_DISABLED Then s = s & IIf(Len(s), sOr, "") & "WS_DISABLED"
-
-    If e And WS_VISIBLE Then s = s & IIf(Len(s), sOr, "") & "WS_VISIBLE"
-    If e And WS_ICONIC Then s = s & IIf(Len(s), sOr, "") & "WS_ICONIC"
-    If e And WS_MINIMIZE Then s = s & IIf(Len(s), sOr, "") & "WS_MINIMIZE"
-    If e And WS_CHILD Then s = s & IIf(Len(s), sOr, "") & "WS_CHILD"
-    If e And WS_CHILDWINDOW Then s = s & IIf(Len(s), sOr, "") & "WS_CHILDWINDOW"
-    If e And WS_POPUP Then s = s & IIf(Len(s), sOr, "") & "WS_POPUP"
-    EWndStyle_ToStr = s
-End Function
-
-Private Function EWndStyleEx_ToStr(e As EWndStyleEx) As String
-    Dim sOr As String: sOr = " Or "
-    Dim s As String
-    If e And WS_EX_LEFT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LEFT"
-    If e And WS_EX_LTRREADING Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LTRREADING"
-    If e And WS_EX_RIGHTSCROLLBAR Then s = s & IIf(Len(s), sOr, "") & "WS_EX_RIGHTSCROLLBAR"
-    If e And WS_EX_DLGMODALFRAME Then s = s & IIf(Len(s), sOr, "") & "WS_EX_DLGMODALFRAME"
-
-    If e And WS_EX_NOPARENTNOTIFY Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOPARENTNOTIFY"
-    If e And WS_EX_TOPMOST Then s = s & IIf(Len(s), sOr, "") & "WS_EX_TOPMOST"
-
-    If e And WS_EX_ACCEPTFILES Then s = s & IIf(Len(s), sOr, "") & "WS_EX_ACCEPTFILES"
-    If e And WS_EX_TRANSPARENT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_TRANSPARENT"
-    If e And WS_EX_MDICHILD Then s = s & IIf(Len(s), sOr, "") & "WS_EX_MDICHILD"
-    If e And WS_EX_TOOLWINDOW Then s = s & IIf(Len(s), sOr, "") & "WS_EX_TOOLWINDOW"
-
-    If e And WS_EX_WINDOWEDGE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_WINDOWEDGE"
-    If e And WS_EX_CLIENTEDGE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_CLIENTEDGE"
-    If e And WS_EX_CONTEXTHELP Then s = s & IIf(Len(s), sOr, "") & "WS_EX_CONTEXTHELP"
-
-    If e And WS_EX_RIGHT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_RIGHT"
-    If e And WS_EX_RTLREADING Then s = s & IIf(Len(s), sOr, "") & "WS_EX_RTLREADING"
-    If e And WS_EX_LEFTSCROLLBAR Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LEFTSCROLLBAR"
-
-    If e And WS_EX_CONTROLPARENT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_CONTROLPARENT"
-    If e And WS_EX_STATICEDGE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_STATICEDGE"
-    If e And WS_EX_APPWINDOW Then s = s & IIf(Len(s), sOr, "") & "WS_EX_APPWINDOW"
-    If e And WS_EX_LAYERED Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LAYERED"
-
-    If e And WS_EX_NOINHERITLAYOUT Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOINHERITLAYOUT"
-    If e And WS_EX_NOREDIRECTIONBITMAP Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOREDIRECTIONBITMAP"
-    If e And WS_EX_LAYOUTRTL Then s = s & IIf(Len(s), sOr, "") & "WS_EX_LAYOUTRTL"
-
-    If e And WS_EX_COMPOSITED Then s = s & IIf(Len(s), sOr, "") & "WS_EX_COMPOSITED"
-    If e And WS_EX_NOACTIVATE Then s = s & IIf(Len(s), sOr, "") & "WS_EX_NOACTIVATE"
-    EWndStyleEx_ToStr = s
-End Function
 
 '' v #################### v '     Local ErrHandler      ' v #################### v '
 Private Function ErrHandler(ByVal FuncName As String, _
