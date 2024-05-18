@@ -21,25 +21,25 @@ Begin VB.Form FMain
    Begin VB.CommandButton Command1 
       Caption         =   "Command1"
       Height          =   375
-      Left            =   3000
+      Left            =   2520
       TabIndex        =   6
-      Top             =   120
+      Top             =   0
       Width           =   1695
    End
    Begin VB.CommandButton Command2 
       Caption         =   "Command2"
       Height          =   375
-      Left            =   12000
+      Left            =   11880
       TabIndex        =   5
-      Top             =   120
+      Top             =   0
       Width           =   1695
    End
    Begin VB.CommandButton BtnCreateVBForm 
       Caption         =   "Create VB.Form Form1"
       Height          =   375
-      Left            =   120
+      Left            =   0
       TabIndex        =   0
-      Top             =   120
+      Top             =   0
       Width           =   2415
    End
    Begin VB.CommandButton BtnCreateWindow 
@@ -47,7 +47,7 @@ Begin VB.Form FMain
       Height          =   375
       Left            =   7560
       TabIndex        =   4
-      Top             =   120
+      Top             =   0
       Width           =   2415
    End
    Begin VB.TextBox Text1 
@@ -56,7 +56,7 @@ Begin VB.Form FMain
       MultiLine       =   -1  'True
       ScrollBars      =   3  'Beides
       TabIndex        =   2
-      Top             =   480
+      Top             =   360
       Width           =   7575
    End
    Begin VB.TextBox Text2 
@@ -65,7 +65,7 @@ Begin VB.Form FMain
       MultiLine       =   -1  'True
       ScrollBars      =   3  'Beides
       TabIndex        =   3
-      Top             =   480
+      Top             =   360
       Width           =   7575
    End
    Begin VB.CommandButton BtnMoveWindow 
@@ -73,7 +73,7 @@ Begin VB.Form FMain
       Height          =   375
       Left            =   10080
       TabIndex        =   1
-      Top             =   120
+      Top             =   0
       Width           =   1695
    End
 End
@@ -88,8 +88,16 @@ Private WithEvents Form1 As Form1
 Attribute Form1.VB_VarHelpID = -1
 Private WithEvents Form2 As Window
 Attribute Form2.VB_VarHelpID = -1
+Private m_Monitor As Monitor
+
+Private Sub Form_Load()
+    Set m_Monitor = New Monitor
+    Debug.Print m_Monitor.Name
+    
+End Sub
 
 Private Sub BtnCreateVBForm_Click()
+    
     Set Form1 = New Form1 'Got it's name/classname in the Property-Editor
     'Form1.RightToLeft = True
     'only possible in Property-Editor:
@@ -127,6 +135,7 @@ Private Sub BtnCreateWindow_Click()
     Set Form2 = MNew.Window("Form2") 'Got it's name/classname by the constructor function
     
     CopyProperties Form2, Form1
+    
     'Form2.MinButton = False
     'Form2.MaxButton = False
     'Form2.ControlBox = False
@@ -142,8 +151,17 @@ Private Sub BtnCreateWindow_Click()
     '    Set Form2.Icon = spic
     '    'Debug.Print "OK"
     'End If
+    
+    'Form2.ClassStyle = Form2.ClassStyle Or CS_DROPSHADOW
+    'Form2.Style = Form2.Style Or WS_HSCROLL Or WS_VSCROLL
+    
     Form2.Load
     Form2.Show
+    
+    Dim btn As CommandButton: Set btn = Form2.Controls_Add("VB.CommandButton", "Button1", Nothing)
+    'btn.Move 30, 30, 90, 60
+    
+    
 End Sub
 
 Private Sub CopyProperties(DstWnd As Window, SrcFrm As Form1)
@@ -288,12 +306,12 @@ Private Sub Form1_Deactivate()
     Debug_Print1 "Deactivate()"
 End Sub
 
-Private Sub Form1_DragDrop(Source As Control, X As Single, Y As Single)
-    Debug_Print1 "DragDrop(Source = " & Source.Name & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form1_DragDrop(Source As Control, x As Single, y As Single)
+    Debug_Print1 "DragDrop(Source = " & Source.Name & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form1_DragOver(Source As Control, X As Single, Y As Single, State As Integer)
-    Debug_Print1 "DragOver(Source = " & Source.Name & ", X = " & X & ", Y = " & Y & ", State = " & State & ")"
+Private Sub Form1_DragOver(Source As Control, x As Single, y As Single, State As Integer)
+    Debug_Print1 "DragOver(Source = " & Source.Name & ", X = " & x & ", Y = " & y & ", State = " & State & ")"
 End Sub
 
 Private Sub Form1_GotFocus()
@@ -305,15 +323,15 @@ Private Sub Form1_Initialize()
 End Sub
 
 Private Sub Form1_KeyDown(KeyCode As Integer, Shift As Integer)
-    Debug_Print1 "KeyDown(KeyCode = " & KeyCode & ", Shift = " & Shift & ")"
+    Debug_Print1 "KeyDown(KeyCode = " & KeyCode & ", Shift = " & ShiftConstants_ToStr(Shift) & ")"
 End Sub
 
 Private Sub Form1_KeyPress(KeyAscii As Integer)
-    Debug_Print1 "KeyPress(KeyAscii = " & KeyAscii & ")"
+    Debug_Print1 "KeyPress(KeyAscii = " & KeyAscii & " = """ & Asc(KeyAscii) & """)"
 End Sub
 
 Private Sub Form1_KeyUp(KeyCode As Integer, Shift As Integer)
-    Debug_Print1 "KeyUp(KeyCode = " & KeyCode & ", Shift = " & Shift & ")"
+    Debug_Print1 "KeyUp(KeyCode = " & KeyCode & ", Shift = " & ShiftConstants_ToStr(Shift) & ")"
 End Sub
 
 Private Sub Form1_LinkClose()
@@ -340,28 +358,28 @@ Private Sub Form1_LostFocus()
     Debug_Print1 "LostFocus()"
 End Sub
 
-Private Sub Form1_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print1 "MouseDown(Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form1_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print1 "MouseDown(Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form1_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print1 "MouseMove(Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form1_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print1 "MouseMove(Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form1_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print1 "MouseUp(Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form1_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print1 "MouseUp(Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
 Private Sub Form1_OLECompleteDrag(Effect As Long)
     Debug_Print1 "OLECompleteDrag(Effect = " & Effect & ")"
 End Sub
 
-Private Sub Form1_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print1 "OLEDragDrop(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form1_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print1 "OLEDragDrop(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form1_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
-    Debug_Print1 "OLEDragOver(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ", State = " & State & ")"
+Private Sub Form1_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single, State As Integer)
+    Debug_Print1 "OLEDragOver(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ", State = " & State & ")"
 End Sub
 
 Private Sub Form1_OLEGiveFeedback(Effect As Long, DefaultCursors As Boolean)
@@ -397,6 +415,33 @@ Private Sub Form1_Unload(Cancel As Integer)
 End Sub
 ' ^ ############################## ^ '    Events Form1    ' ^ ############################## ^ '
 
+Private Function MouseButtonConstants_ToStr(ByVal e As MouseButtonConstants) As String
+    Dim s As String
+    Select Case e
+    Case 0:                                   s = "NoButton"
+    Case MouseButtonConstants.vbLeftButton:   s = "vbLeftButton"
+    Case MouseButtonConstants.vbMiddleButton: s = "vbMiddleButton"
+    Case MouseButtonConstants.vbRightButton:  s = "vbRightButton"
+    Case Else: s = CStr(e)
+    End Select
+    MouseButtonConstants_ToStr = s
+End Function
+
+'Enum ShiftConstants
+'   vbShiftMask = 1
+'   vbCtrlMask = 2
+'   vbAltMask = 4
+'End Enum
+
+Private Function ShiftConstants_ToStr(ByVal e As ShiftConstants) As String
+    Dim s As String
+    If (e And vbShiftMask) = vbShiftMask Then s = s & IIf(Len(s), " Or ", "") & "vbShiftMask"
+    If (e And vbCtrlMask) = vbCtrlMask Then s = s & IIf(Len(s), " Or ", "") & "vbCtrlMask"
+    If (e And vbAltMask) = vbAltMask Then s = s & IIf(Len(s), " Or ", "") & "vbAltMask"
+    If Len(s) = 0 Then s = "NoKey"
+    ShiftConstants_ToStr = s
+End Function
+
 ' v ############################## v '    Events Form2    ' v ############################## v '
 Private Sub Form2_Activate()
     Debug_Print2 "Activate()"
@@ -414,12 +459,12 @@ Private Sub Form2_Deactivate()
     Debug_Print2 "Deactivate()"
 End Sub
 
-Private Sub Form2_DragDrop(Source As Control, X As Single, Y As Single)
-    Debug_Print2 "DragDrop(Source = " & Source.Name & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form2_DragDrop(Source As Control, x As Single, y As Single)
+    Debug_Print2 "DragDrop(Source = " & Source.Name & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form2_DragOver(Source As Control, X As Single, Y As Single, State As Integer)
-    Debug_Print2 "DragOver(Source = " & Source.Name & ", X = " & X & ", Y = " & Y & ", State = " & State & ")"
+Private Sub Form2_DragOver(Source As Control, x As Single, y As Single, State As Integer)
+    Debug_Print2 "DragOver(Source = " & Source.Name & ", X = " & x & ", Y = " & y & ", State = " & State & ")"
 End Sub
 
 Private Sub Form2_GotFocus()
@@ -431,15 +476,15 @@ Private Sub Form2_Initialize()
 End Sub
 
 Private Sub Form2_KeyDown(KeyCode As Integer, Shift As Integer)
-    Debug_Print2 "KeyDown(KeyCode = " & KeyCode & ", Shift = " & Shift & ")"
+    Debug_Print2 "KeyDown(KeyCode = " & KeyCode & ", Shift = " & ShiftConstants_ToStr(Shift) & ")"
 End Sub
 
 Private Sub Form2_KeyPress(KeyAscii As Integer)
-    Debug_Print2 "KeyPress(KeyAscii = " & KeyAscii & ")"
+    Debug_Print2 "KeyPress(KeyAscii = " & KeyAscii & " = """ & Asc(KeyAscii) & """)"
 End Sub
 
 Private Sub Form2_KeyUp(KeyCode As Integer, Shift As Integer)
-    Debug_Print2 "KeyUp(KeyCode = " & KeyCode & ", Shift = " & Shift & ")"
+    Debug_Print2 "KeyUp(KeyCode = " & KeyCode & ", Shift = " & ShiftConstants_ToStr(Shift) & ")"
 End Sub
 
 Private Sub Form2_LinkClose()
@@ -466,28 +511,28 @@ Private Sub Form2_LostFocus()
     Debug_Print2 "LostFocus()"
 End Sub
 
-Private Sub Form2_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print2 "MouseDown(Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form2_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print2 "MouseDown(Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form2_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print2 "MouseMove(Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form2_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print2 "MouseMove(Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form2_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print2 "MouseUp(Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form2_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print2 "MouseUp(Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
 Private Sub Form2_OLECompleteDrag(Effect As Long)
     Debug_Print2 "OLECompleteDrag(Effect = " & Effect & ")"
 End Sub
 
-Private Sub Form2_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Debug_Print2 "OLEDragDrop(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ")"
+Private Sub Form2_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+    Debug_Print2 "OLEDragDrop(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ")"
 End Sub
 
-Private Sub Form2_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
-    Debug_Print2 "OLEDragOver(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Button = " & Button & ", Shift = " & Shift & ", X = " & X & ", Y = " & Y & ", State = " & State & ")"
+Private Sub Form2_OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single, State As Integer)
+    Debug_Print2 "OLEDragOver(Data = " & Data.Files.Count & ", Effect = " & Effect & ", Button = " & MouseButtonConstants_ToStr(Button) & ", Shift = " & ShiftConstants_ToStr(Shift) & ", X = " & x & ", Y = " & y & ", State = " & State & ")"
 End Sub
 
 Private Sub Form2_OLEGiveFeedback(Effect As Long, DefaultCursors As Boolean)
@@ -520,6 +565,14 @@ End Sub
 
 Private Sub Form2_Unload(Cancel As Integer)
     Debug_Print2 "Unload(Cancel = " & Cancel & ")"
+End Sub
+
+Private Sub Form2_HScrollChange()
+    Debug_Print2 "HScrollChange " & Form2.HScrollValue
+End Sub
+
+Private Sub Form2_VScrollChange()
+    Debug_Print2 "VScrollChange " & Form2.VScrollValue
 End Sub
 
 ' ^ ############################## ^ '    Events Form2    ' ^ ############################## ^ '

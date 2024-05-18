@@ -1,5 +1,6 @@
 Attribute VB_Name = "MWindow"
 Option Explicit
+
 Public Enum EWinMsg
     WM_NULL = &H0&                             '   0
     WM_CREATE = &H1&                           '   1
@@ -234,18 +235,17 @@ Public Enum EWinMsg
 End Enum
 
 
-Private Const WA_INACTIVE    As Long = 0   '    Deaktiviert.
-Private Const WA_ACTIVE      As Long = 1   '    Aktiviert durch eine andere Methode als einen Mausklick (z. B. durch einen Aufruf der SetActiveWindow-Funktion oder durch Die Verwendung der Tastaturschnittstelle zum Auswählen des Fensters).
-Private Const WA_CLICKACTIVE As Long = 2   '    Durch Einen Mausklick aktiviert.
+Private Const WA_INACTIVE    As Long = 0&    ' Deaktiviert.
+Private Const WA_ACTIVE      As Long = 1&    ' Aktiviert durch eine andere Methode als einen Mausklick (z. B. durch einen Aufruf der SetActiveWindow-Funktion oder durch Die Verwendung der Tastaturschnittstelle zum Auswählen des Fensters).
+Private Const WA_CLICKACTIVE As Long = 2&    ' Durch Einen Mausklick aktiviert.
 
-
-'Private Const GWL_WNDPROC    As Long = (–4&)  '    Ruft die Adresse der Fensterprozedur oder ein Handle ab, das die Adresse der Fensterprozedur darstellt. Sie müssen die CallWindowProc-Funktion verwenden, um die Fensterprozedur aufzurufen.
-'Private Const GWL_HINSTANCE  As Long = (–6&)  '    Ruft ein Handle für die anwendung instance ab.
-'Private Const GWL_HWNDPARENT As Long = (-8&)  '    Ruft ggf. ein Handle für das übergeordnete Fenster ab.
-'Private Const GWL_ID         As Long = (-12&) '    Ruft den Bezeichner des Fensters ab.
-'Private Const GWL_STYLE      As Long = (-16&) '    Ruft die Fensterstile ab.
-'Private Const GWL_EXSTYLE    As Long = (-20&) '    Ruft die erweiterten Fensterstile ab.
-'Private Const GWL_USERDATA   As Long = (-21&) '    Ruft die dem Fenster zugeordneten Benutzerdaten ab. Diese Daten sind für die Verwendung durch die Anwendung vorgesehen, die das Fenster erstellt hat. Sein Wert ist anfänglich 0 (null).
+Private Const GWL_WNDPROC    As Long = -4&   ' Ruft die Adresse der Fensterprozedur oder ein Handle ab, das die Adresse der Fensterprozedur darstellt. Sie müssen die CallWindowProc-Funktion verwenden, um die Fensterprozedur aufzurufen.
+Private Const GWL_HINSTANCE  As Long = -6&   ' Ruft ein Handle für die anwendung instance ab.
+Private Const GWL_HWNDPARENT As Long = -8&   ' Ruft ggf. ein Handle für das übergeordnete Fenster ab.
+Private Const GWL_ID         As Long = -12&  ' Ruft den Bezeichner des Fensters ab.
+Private Const GWL_STYLE      As Long = -16&  ' Ruft die Fensterstile ab.
+Private Const GWL_EXSTYLE    As Long = -20&  ' Ruft die erweiterten Fensterstile ab.
+Private Const GWL_USERDATA   As Long = -21&  ' Ruft die dem Fenster zugeordneten Benutzerdaten ab. Diese Daten sind für die Verwendung durch die Anwendung vorgesehen, die das Fenster erstellt hat. Sein Wert ist anfänglich 0 (null).
 
 #If VBA7 Then
     
@@ -320,11 +320,11 @@ Public Function Windows_Delete(hWnd As LongPtr) As Boolean
 End Function
 
 
-Private Function LoWord(ByVal lngValue As Long) As Long
+Public Function LoWord(ByVal lngValue As Long) As Integer
     LoWord = (lngValue And &H7FFF)
 End Function
 
-Private Function HiWord(ByVal lngValue As Long) As Long
+Public Function HiWord(ByVal lngValue As Long) As Integer 'Long
     If (lngValue And &H80000000) = &H80000000 Then
         HiWord = ((lngValue And &H7FFF0000) \ &H10000) Or &H8000
     Else
@@ -375,17 +375,19 @@ Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As EWin
     Case WM_GESTURENOTIFY:  'Window.onGesture
     
     'Keyboard-Events
-    Case WM_KEYDOWN:        Window.OnKeyDown CInt(wParam3), CInt(lParam4)
-    Case WM_CHAR:           Window.OnKeyPress CInt(wParam3)
+    Case WM_KEYDOWN:        Window.OnKeyDown LoWord(wParam3), LoWord(lParam4)
+    Case WM_CHAR:           Window.OnKeyPress LoWord(wParam3)
     'Case WM_KEYLAST:        Window.OnKeyPress
-    Case WM_KEYUP:          Window.OnKeyUp CInt(wParam3), CInt(lParam4)
-    
+    Case WM_KEYUP:          Window.OnKeyUp LoWord(wParam3), LoWord(lParam4)
     'Mouse-Events
-    Case WM_MOUSEMOVE:      Window.OnMouseMove 0, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
+    Case WM_MOUSEMOVE:      Dim tmp As Integer: tmp = LoWord(wParam3)
+                            Window.OnMouseMove tmp, tmp, CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     Case WM_LBUTTONDBLCLK:  Window.OnDblClick
     
     Case WM_LBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbLeftButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     Case WM_LBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbLeftButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
+                            Window.OnClick
+                            Window.OnMouseMove MouseButtonConstants.vbLeftButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     'Case WM_MBUTTONDBLCLK:
     Case WM_MBUTTONDOWN:    Window.OnMouseDown MouseButtonConstants.vbMiddleButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
     Case WM_MBUTTONUP:      Window.OnMouseUp MouseButtonConstants.vbMiddleButton, CInt(LoWord(wParam3)), CSng(LoWord(lParam4)), CSng(HiWord(lParam4))
@@ -395,7 +397,9 @@ Public Function WndProc(ByVal hWnd_Param1 As LongPtr, ByVal uiMsg_Param2 As EWin
     
     Case WM_SETFOCUS:       Window.OnGotFocus
     Case WM_KILLFOCUS:      Window.OnLostFocus
-    
+    Case WM_HSCROLL:        Window.OnScrollH
+    Case WM_VSCROLL:        Window.OnScrollV
+
     'Case WM_MOUSEHOVER:
     'Case WM_MOUSEHWHEEL:
     'Case WM_MOUSEWHEEL:
@@ -742,17 +746,17 @@ End Function
 'Private Const GWL_USERDATA   As Long = -21 '    Ruft die dem Fenster zugeordneten Benutzerdaten ab. Diese Daten sind für die Verwendung durch die Anwendung vorgesehen, die das Fenster erstellt hat. Sein Wert ist anfänglich 0 (null).
 
 Public Property Get WindowStyle(ByVal ahWnd As LongPtr) As Long
-    WindowStyle = GetWindowLongW(ahWnd, (-16&)) 'GWL_STYLE)
+    WindowStyle = GetWindowLongW(ahWnd, GWL_STYLE)
 End Property
 Public Property Let WindowStyle(ByVal ahWnd As LongPtr, ByVal Value As Long)
-    Dim hr As Long: hr = SetWindowLongW(ahWnd, (-16&), Value) 'GWL_STYLE, Value)
+    Dim hr As Long: hr = SetWindowLongW(ahWnd, GWL_STYLE, Value)
 End Property
 
 Public Property Get WindowStyleEx(ByVal ahWnd As LongPtr) As Long
-    WindowStyleEx = GetWindowLongW(ahWnd, (-20&)) 'GWL_EXSTYLE)
+    WindowStyleEx = GetWindowLongW(ahWnd, GWL_EXSTYLE)
 End Property
 Public Property Let WindowStyleEx(ByVal ahWnd As LongPtr, ByVal Value As Long)
-    Dim hr As Long: hr = SetWindowLongW(ahWnd, (-20&), Value) 'GWL_EXSTYLE, Value)
+    Dim hr As Long: hr = SetWindowLongW(ahWnd, GWL_EXSTYLE, Value)
 End Property
 
 

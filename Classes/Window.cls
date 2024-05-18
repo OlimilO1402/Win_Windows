@@ -12,7 +12,9 @@ Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
-
+Implements Control
+'Implements VBControlExtender
+'OM: 2024-05-14 lines: 1623
 Public Enum EClsStyle
     CS_VREDRAW = &H1&             '    Zeichnet das gesamte Fenster neu, wenn eine Bewegung oder Größenanpassung die Höhe des Clientbereichs ändert.
     CS_HREDRAW = &H2&             '    Zeichnet das gesamte Fenster neu, wenn durch eine Verschiebung oder Größenanpassung die Breite des Clientbereichs geändert wird.
@@ -26,7 +28,7 @@ Public Enum EClsStyle
     CS_BYTEALIGNWINDOW = &H2000&  '    Richtet das Fenster an einer Bytegrenze (in x-Richtung) aus. Diese Formatvorlage wirkt sich auf die Breite des Fensters und seine horizontale Platzierung auf der Anzeige aus.
     CS_GLOBALCLASS = &H4000&      '    Gibt an, dass die Fensterklasse eine globale Anwendungsklasse ist. Weitere Informationen finden Sie im Abschnitt "Globale Anwendungsklassen" unter Informationen zu Fensterklassen.
     CS_DROPSHADOW = &H20000       '    Aktiviert den Schlagschatteneffekt für ein Fenster. Der Effekt wird über SPI_SETDROPSHADOW ein- und ausgeschaltet. In der Regel ist dies für kleine, kurzlebige Fenster wie Menüs aktiviert, um ihre Z-Reihenfolge-Beziehung zu anderen Fenstern hervorzuheben. Fenster, die aus einer Klasse mit diesem Stil erstellt werden, müssen Fenster der obersten Ebene sein. Sie dürfen keine Kinderfenster sein.
-    VBFormClassStyleDefault = CS_VREDRAW Or CS_PARENTDC Or CS_OWNDC Or CS_HREDRAW
+    VBFormClassStyleDefault = CS_VREDRAW Or CS_HREDRAW Or CS_DBLCLKS Or CS_OWNDC Or CS_PARENTDC
 End Enum
 
 'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -207,7 +209,6 @@ Public Enum EWndShow
     SW_FORCEMINIMIZE = &H11&    ' Minimiert ein Fenster, auch wenn der Thread, der das Fenster besitzt, nicht reagiert. Dieses Flag sollte nur verwendet werden, wenn Fenster aus einem anderen Thread minimiert werden.
 End Enum
 
-
 Private Const IDC_ARROW              As Long = 32512&
 Private Const IDC_IBEAM              As Long = 32513&
 Private Const IDC_WAIT               As Long = 32514&
@@ -226,6 +227,14 @@ Private Const IDC_NO                 As Long = 32648&
 Private Const IDC_HAND               As Long = 32649&
 Private Const IDC_APPSTARTING        As Long = 32650&
 Private Const IDC_HELP               As Long = 32651&
+
+Private Const MK_LBUTTON     As Long = &H1&  ' Die linke Maustaste ist gedrückt.
+Private Const MK_RBUTTON     As Long = &H2&  ' Die rechte Maustaste ist gedrückt.
+Private Const MK_SHIFT       As Long = &H4&  ' Die UMSCHALTTASTE ist gedrückt.
+Private Const MK_CONTROL     As Long = &H8&  ' Die STRG-TASTE ist gedrückt.
+Private Const MK_MBUTTON     As Long = &H10& ' Die mittlere Maustaste ist gedrückt.
+Private Const MK_XBUTTON1    As Long = &H20& ' Die erste X-Taste ist ausgefallen.
+Private Const MK_XBUTTON2    As Long = &H40& ' Die zweite X-Taste ist ausgefallen.
 
 'https://learn.microsoft.com/de-de/windows/win32/api/winuser/ns-winuser-createstructw
 'typedef struct tagCREATESTRUCTW {
@@ -250,14 +259,42 @@ Private Type CREATESTRUCTW
     hwndParent     As LongPtr
     cy             As Long
     cx             As Long
-    Y              As Long
-    X              As Long
+    y              As Long
+    x              As Long
     Style          As EWndStyle
     lpszName       As LongPtr
     lpszClass      As LongPtr
     dwExStyle      As EWndStyleEx
 End Type
 
+
+Private Type POINT
+    x      As Long
+    y      As Long
+End Type
+
+Private Type RECT
+    Left   As Long
+    Top    As Long
+    Right  As Long
+    Bottom As Long
+End Type
+
+Private Type PAINTSTRUCT
+    hDC                     As Long
+    fErase                  As Long
+    rcPaint                 As RECT
+    fRestore                As Long
+    fIncUpdate              As Long
+    rgbReserved(0 To 31)    As Byte
+End Type
+
+Private Type MONITORINFO
+    cbSize                  As Long
+    rcMonitor               As RECT
+    rcWork                  As RECT
+    dwFlags                 As Long
+End Type
 
 'https://www.codeproject.com/Articles/7969/How-to-make-a-Message-Only-Window
 Private Const HWND_MESSAGE As Long = -3&
@@ -304,6 +341,9 @@ Private Const HWND_MESSAGE As Long = -3&
 
     Private Declare PtrSafe Function LoadCursorW Lib "user32" (ByVal hInstance As LongPtr, ByVal lpCursorName As LongPtr) As LongPtr
     
+    Private Declare PtrSafe Function SetFocusApi Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+
+    
 #Else
 
     'https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-wndproc
@@ -334,15 +374,15 @@ Private Const HWND_MESSAGE As Long = -3&
     '  [in, optional] LPVOID    lpParam
     ');
     Private Declare Function CreateWindowExW Lib "user32" (ByVal dwExStyle As Long, ByVal lpClassName As LongPtr, ByVal lpWindowName As LongPtr, _
-        ByVal dwStyle As Long, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
+        ByVal dwStyle As Long, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal hwndParent As LongPtr, _
         ByVal hMenu As LongPtr, ByVal hInstance As LongPtr, lpParam As Any) As LongPtr
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setwindowpos
-    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As EWndShow) As Long
+    Private Declare Function SetWindowPos Lib "user32" (ByVal hWnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As EWndShow) As Long
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-movewindow
     'BOOL MoveWindow( [in] HWND hWnd, [in] int  X, [in] int  Y, [in] int  nWidth, [in] int  nHeight, [in] BOOL bRepaint );
-    Private Declare Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
+    Private Declare Function MoveWindow Lib "user32" (ByVal hWnd As LongPtr, ByVal x As Long, ByVal y As Long, ByVal nWidth As Long, ByVal nHeight As Long, ByVal bRepaint As Long) As Long
     
     'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-showwindow
     'BOOL ShowWindow( [in] HWND hWnd, [in] int  nCmdShow );
@@ -367,12 +407,25 @@ Private Const HWND_MESSAGE As Long = -3&
     'HCURSOR LoadCursorW( [in, optional] HINSTANCE hInstance, [in] LPCWSTR lpCursorName);
     Private Declare Function LoadCursorW Lib "user32" (ByVal hInstance As LongPtr, ByVal lpCursorName As LongPtr) As LongPtr
     
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setfocus
+    'HWND SetFocus([in, optional] HWND hWnd);
+    Private Declare Function SetFocusApi Lib "user32" Alias "SetFocus" (ByVal hWnd As LongPtr) As LongPtr
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-setparent
+    'HWND SetParent([in] HWND hWndChild, [in, optional] HWND hWndNewParent);
+    Private Declare Function SetParent Lib "user32" (ByVal hWndChild As LongPtr, ByVal hWndNewParent As LongPtr) As LongPtr
+    
+    'https://learn.microsoft.com/de-de/windows/win32/api/winuser/nf-winuser-getclientrect
+    'BOOL GetClientRect([in] HWND hWnd, [out] LPRECT lpRect);
+    Private Declare Function GetClientRect Lib "user32" (ByVal hWnd As LongPtr, ByRef lpRect As RECT) As Long
+
+    
 #End If
 
 Private m_Name         As String
-Private m_Caption      As String
+Private m_Caption      As String ' = m_Name if not specified
 Private Const ClsName  As String = "ThunderVB64uWindow"
-Private m_ClsName      As String
+Private m_ClsName      As String ' = ClsName & m_Name
 Private m_WndCls       As WNDCLASSEXW
 Private m_ClsAtom      As LongPtr
 Private m_Window       As CREATESTRUCTW
@@ -387,13 +440,25 @@ Private m_Font         As StdFont
 Private m_Icon         As StdPicture 'IPictureDisp
 Private m_MouseIcon    As StdPicture 'IPictureDisp
 Private m_MousePointer As Long ' = IDC_
+Private m_AutoRedraw   As Boolean
+Private m_BackColor    As Long
+Private m_CurX         As Single
+Private m_CurY         As Single
+Private m_DrawMode     As DrawModeConstants
+Private m_DrawStyle    As DrawStyleConstants
+Private m_DrawWidth    As Integer
+Private m_Enabled      As Boolean
+Private m_FillColor    As Long
+Private m_FillStyle    As FillStyleConstants
+Private m_ForeColor    As Long
+Private m_ClientRect   As RECT
 
 Public Event Activate()
 Public Event Click()
 Public Event DblClick()
 Public Event Deactivate()
-Public Event DragDrop(Source As Control, X As Single, Y As Single)
-Public Event DragOver(Source As Control, X As Single, Y As Single, State As Integer)
+Public Event DragDrop(Source As Control, x As Single, y As Single)
+Public Event DragOver(Source As Control, x As Single, y As Single, State As Integer)
 Public Event GotFocus()
 Public Event Initialize()
 Public Event KeyDown(KeyCode As Integer, Shift As Integer)
@@ -405,12 +470,12 @@ Public Event LinkExecute(CmdStr As String, Cancel As Integer)
 Public Event LinkOpen(Cancel As Integer)
 Public Event Load()
 Public Event LostFocus()
-Public Event MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Public Event MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-Public Event MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Public Event MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
+Public Event MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Public Event MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
 Public Event OLECompleteDrag(Effect As Long)
-Public Event OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
-Public Event OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer)
+Public Event OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+Public Event OLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single, State As Integer)
 Public Event OLEGiveFeedback(Effect As Long, DefaultCursors As Boolean)
 Public Event OLESetData(Data As DataObject, DataFormat As Integer)
 Public Event OLEStartDrag(Data As DataObject, AllowedEffects As Long)
@@ -419,6 +484,11 @@ Public Event QueryUnload(Cancel As Integer, UnloadMode As Integer)
 Public Event Resize()
 Public Event Terminate()
 Public Event Unload(Cancel As Integer)
+Public Event HScrollChange()
+Public Event VScrollChange()
+Public Event Gesture()
+Public Event MouseScroll()
+
 
 Private Function GethInstance() As LongPtr
     GethInstance = GetModuleHandleW(StrPtr(vbNullString))
@@ -428,10 +498,11 @@ Private Sub Class_Initialize()
     m_WindowState = SW_NORMAL
     m_Name = "Window"
     m_ClsName = ClsName
-    m_Caption = "Form"
-    Dim cap As String: cap = m_Caption & vbNullChar
+    m_Caption = "Form" '& vbNullChar
+    'Dim cap As String: cap = m_Caption & vbNullChar
     With m_Window
-        .lpszName = StrPtr(cap)
+        '.lpszName = StrPtr(cap)
+        .lpszName = StrPtr(m_Caption)
         .hInstance = GethInstance 'App.hInstance
         .Style = EWndStyle.VBFormStyle_Sizable
         .dwExStyle = EWndStyle.VBFormStyle_Sizable
@@ -440,8 +511,8 @@ Private Sub Class_Initialize()
         '         WS_CAPTION Or WS_CLIPCHILDREN Or WS_CLIPSIBLINGS Or WS_VISIBLE
         .dwExStyle = WS_EX_WINDOWEDGE Or WS_EX_APPWINDOW
         'default position and size
-        .X = 33
-        .Y = 26
+        .x = 33
+        .y = 26
         .cx = 320 'px VB-default
         .cy = 240 'px VB-default
     End With
@@ -475,9 +546,10 @@ Friend Sub New_(ByVal Name As String, Optional ByVal Caption As String, Optional
     m_Name = Name
     m_ClsName = ClsName & Name
     m_Caption = IIf(Len(Caption), Caption, m_Name)
-    Dim cap As String: cap = m_Caption & vbNullChar
+    'Dim cap As String: cap = m_Caption & vbNullChar
     With m_Window
-        .lpszName = StrPtr(cap)
+        '.lpszName = StrPtr(cap)
+        .lpszName = StrPtr(m_Caption)
         .Style = Style
         .dwExStyle = StyleEx
     End With
@@ -488,11 +560,12 @@ End Sub
 
 Private Function Register() As Boolean
     'preparing the wnd-class-struct
-    Dim cln As String: cln = m_ClsName & vbNullChar
-    Debug.Print m_ClsName
+    'Dim cln As String: cln = m_ClsName & vbNullChar
+    'Debug.Print m_ClsName
     With m_WndCls
         .cbSize = LenB(m_WndCls) '48?
-        .lpszClassName = StrPtr(cln)
+        '.lpszClassName = StrPtr(cln)
+        .lpszClassName = StrPtr(m_ClsName)
         .lpfnWndProc = FncPtr(AddressOf MWindow.WndProc)
         .hInstance = GethInstance 'App.hInstance
         '.cbClsExtra
@@ -555,7 +628,7 @@ Public Sub Load()
     End If
     With m_Window
         .lpszClass = m_ClsAtom
-        m_hWnd = CreateWindowExW(.dwExStyle, .lpszClass, .lpszName, .Style, .X, .Y, .cx, .cy, .hwndParent, .hMenu, .hInstance, ByVal .lpCreateParams)
+        m_hWnd = CreateWindowExW(.dwExStyle, .lpszClass, .lpszName, .Style, .x, .y, .cx, .cy, .hwndParent, .hMenu, .hInstance, ByVal .lpCreateParams)
         'Debug.Print "Windows_Add"
         MWindow.Windows_Add m_hWnd, Me
         'MWindow.WindowAdded = True
@@ -592,24 +665,60 @@ End Sub
 ' v ############################## v '    OM TODO:    ' v ############################## v '
 'Drawing functions:
 Public Sub Cls() 'clear screen
+    'Löscht Grafiken und Texte, die zur Laufzeit von einem Formular, Anzeige- oder Bildfeld-Steuerelement erzeugt wurden.
+
+End Sub
+Public Sub CCircle(Step As Integer, x As Single, y As Single, Radius As Single, Color As Long, Start As Single, Ende As Single, Aspect As Single)
+    'Gibt einen Kreis, eine Ellipse oder einen Kreisbogen auf einem Objekt aus.
     '
 End Sub
-Public Sub CCircle() 'draws a Circle
-    '
+
+
+'    'the Line-command has a special syntax
+'    'Line (StartX, StartY)-(EndX, EndY), Color, [B][F]
+'
+'    'Draws a line, using the default foreground color
+'    Line (20, 50)-(200, 100)
+'
+'    'Draws a line from the last end point to the new end point
+'    Line -(300, 100)
+'
+'    'Draws a line, using the specified color
+'    Line (50, 70)-(230, 120), vbRed
+'
+'    'Draws an empty box, using the default foreground color
+'    Line (80, 90)-(260, 140), , B
+'
+'    'Draws an empty box, using the specified color for the outline
+'    Line (110, 110)-(290, 160), vbBlue, B
+'
+'    'Draws a _F_illed box, using the default foreground color for the outline and the filling
+'    Line (140, 130)-(320, 180), , BF
+'
+'    'Draws a _F_illed box, using the speciefied color for the outline and the filling
+'    'specified color for the outline and the
+'    Line (140, 130)-(320, 180), vbGreen, BF
+
+
+Public Sub Line(ByVal X1 As Single, ByVal Y1 As Single, ByVal X2 As Single, ByVal Y2 As Single, ByVal Color As Long, ByVal Flags As Integer)
+    'Gibt Linien und Rechtecke auf einem Objekt aus.
+    
 End Sub
-Public Sub Line() 'draws a line
-    '
-End Sub
-Public Function Point(X As Single, Y As Single) As Long 'moves to point
-    '
+
+Public Function POINT(ByVal x As Single, ByVal y As Single) As Long
+    'Gibt die RGB-Farbe des angegebenen Punkts in einem Formular oder Bildfeld als Integer vom Typ Long zurück.
+    
 End Function
-Public Sub PPSet(Step As Integer, X As Single, Y As Single, Color As Long)
-    '
+
+'Sub PSet(Step As Integer, X As Single, Y As Single, Color As Long)
+Public Sub PPSet(ByVal Step As Integer, ByVal x As Single, ByVal y As Single, ByVal Color As Long)
+    'Setzt einen Punkt in einem Objekt auf eine bestimmte Farbe.
+
 End Sub
 
 Public Property Get ActiveControl() As Control
     'Gibt das Steuerelement mit dem Fokus zurück.
-
+    
 End Property
 
 '0 - 2D
@@ -624,9 +733,12 @@ End Property
 
 Public Property Get AutoRedraw() As Boolean
     ' Gibt die Ausgabe einer Grafikmethode an eine beständige Bitmap zurück oder legt diese fest.
+    AutoRedraw = m_AutoRedraw
 End Property
 Public Property Let AutoRedraw(ByVal Value As Boolean)
-    '
+    m_AutoRedraw = Value
+    m_WndCls.Style = m_WndCls.Style Or CS_SAVEBITS
+    If Not m_AutoRedraw Then m_WndCls.Style = m_WndCls.Style Xor CS_SAVEBITS
 End Property
 
 Public Property Get BackColor() As Long
@@ -707,24 +819,101 @@ Public Property Get Controls() As Object
     Set Controls = m_Controls
 End Property
 
+'Classnames for VBs intrinsic controls:
+'"VB.CheckBox"
+'"VB.ComboBox"
+'"VB.CommandButton"
+'"VB.Frame"
+'"VB.HScrollbar"
+'"VB.Image"
+'"VB.Label"
+'"VB.Line"
+'"VB.ListBox"
+'"VB.OptionButton"
+'"VB.PictureBox"
+'"VB.Shape"
+'"VB.TextBox"
+'"VB.Timer"
+'"VB.VScrollBar"
+'e.g. CommandButton
+'Dim btn As CommandButton: Set btn = Form1.Controls.Add("VB.CommandButton", "CommandButtonNeu", Form1)
+'e.g. TextBox
+'Dim txt As TextBox: Set txt = Form1.Controls.Add("VB.TextBox", "TextBoxNeu", Form1)
+'                                 "VB.TextBox",        "TextBoxNeu",        Form1
+Public Function Controls_Add(ByVal ClassName As String, ByVal CtrlName As String, Parent As Control) As VBControlExtender ' Control
+    Dim ctrl As Object ' VBControlExtender
+    Set ctrl = CreateObject(ClassName)
+    'Set Controls_Add = CreateObject(ClassName)
+    'm_Controls.Add Controls_Add, CtrlName
+    m_Controls.Add ctrl, CtrlName
+    Debug.Print ctrl.hWnd
+    Dim hWnd As LongPtr: hWnd = SetParent(ctrl.hWnd, m_hWnd)
+    'Controls_Add.Visible = True
+    ctrl.Visible = True
+End Function
+
 Public Property Get Count() As Integer
     'schreibgeschützt
     'Gibt die Anzahl der Objekte in einer Auflistung zurück.
     Count = m_Controls.Count
 End Property
 
-Public Property Get CurrentX() As Single:                      End Property
-Public Property Get CurrentY() As Single:                      End Property
-
-Public Property Get DrawMode() As DrawModeConstants
-    '
+Public Property Get CurrentX() As Single
+    ' Gibt die horizontalen Koordinaten für die nächste Druck- oder Zeichenmethode zurück oder legt diese fest.
+    CurrentX = m_CurX
+End Property
+Public Property Let CurrentX(ByVal Value As Single)
+    m_CurX = Value
 End Property
 
-Public Property Get DrawStyle() As DrawStyleConstants:         End Property
-Public Property Get DrawWidth() As Integer:                    End Property
-Public Property Get Enabled() As Boolean:                      End Property
-Public Property Get FillColor() As Long:                       End Property
-Public Property Get FillStyle() As FillStyleConstants:         End Property
+Public Property Get CurrentY() As Single
+    ' Gibt die vertikalen Koordinaten für die nächste Druck- oder Zeichenmethode zurück oder legt diese fest.
+    CurrentY = m_CurY
+End Property
+Public Property Let CurrentY(ByVal Value As Single)
+    m_CurY = Value
+End Property
+
+Public Property Get DrawMode() As DrawModeConstants
+    'Legt das Erscheinungsbild der Ausgabe von Grafikmethoden oder eines Figur- oder Liniensteuerelements fest.
+    DrawMode = m_DrawMode
+End Property
+Public Property Let DrawMode(ByVal Value As DrawModeConstants)
+    m_DrawMode = Value
+End Property
+
+Public Property Get DrawStyle() As DrawStyleConstants
+    'Bestimmt den Linienstil für die Ausgabe von Grafikmethoden.
+    DrawStyle = m_DrawStyle
+End Property
+Public Property Let DrawStyle(ByVal Value As DrawStyleConstants)
+    m_DrawStyle = Value
+End Property
+
+Public Property Get DrawWidth() As Integer
+    'Gibt die Linienbreite für die Ausgabe von Grafikmethoden zurück oder legt diese fest.
+    DrawWidth = m_DrawWidth
+End Property
+Public Property Let DrawWidth(ByVal Value As Integer)
+    m_DrawWidth = Value
+End Property
+
+Public Property Get Enabled() As Boolean
+    'Gibt einen Wert zurück, der bestimmt, ob ein Objekt auf vom Benutzer erzeugte Ereignisse reagieren kann, oder legt diesen fest.
+    Enabled = m_Enabled
+End Property
+Public Property Let Enabled(ByVal Value As Boolean)
+    m_Enabled = Value
+End Property
+
+Public Property Get FillColor() As Long
+    'Gibt die Farbe zurück, die zum Auffüllen von Figuren, Kreisen und Feldern verwendet wird, oder legt diese fest.
+    FillColor = m_FillColor
+End Property
+Public Property Get FillStyle() As FillStyleConstants
+    'Gibt den Füllstil einer Figur zurück oder legt diesen fest.
+    FillStyle = m_FillStyle
+End Property
 
 ' v ############################## v '    Font    ' v ############################## v '
 Public Property Get Font() As StdFont
@@ -1033,7 +1222,7 @@ Public Property Get PaletteMode() As Integer: End Property
 Public Property Get Picture() As IPictureDisp: End Property
 
 
-Public Sub PopupMenu(Menu As Object, Optional Flags, Optional X, Optional Y, Optional DefaultMenu): End Sub
+Public Sub PopupMenu(Menu As Object, Optional Flags, Optional x, Optional y, Optional DefaultMenu): End Sub
 Public Sub PrintForm(): End Sub
 
 Public Sub Refresh()
@@ -1072,16 +1261,109 @@ Public Property Let ScaleMode(ByVal Value As Integer)
     'oder legt diesen fest.
     m_ScaleMode = Value
 End Property
-Public Property Get ScaleLeft() As Single: End Property
-Public Property Get ScaleTop() As Single: End Property
-Public Property Get ScaleWidth() As Single: End Property
-Public Property Get ScaleHeight() As Single: End Property
 
-Public Function ScaleX(Width As Single, Optional FromScale, Optional ToScale) As Single: End Function
-Public Function ScaleY(Height As Single, Optional FromScale, Optional ToScale): End Function
+Public Property Get ScaleLeft() As Single
+    ScaleLeft = ScaleX(m_ClientRect.Left, vbPixels)
+End Property
+Public Property Get ScaleTop() As Single
+    ScaleTop = ScaleY(m_ClientRect.Top, vbPixels)
+End Property
+Public Property Get ScaleWidth() As Single
+    ScaleWidth = ScaleX(m_ClientRect.Right, vbPixels) - ScaleLeft
+End Property
+Public Property Get ScaleHeight() As Single
+    ScaleHeight = ScaleY(m_ClientRect.Bottom, vbPixels) - ScaleTop
+End Property
 
-Public Sub SetFocus(): End Sub
+Public Function ScaleX(ByVal Width As Single, Optional FromScale, Optional ToScale) As Single
+    Dim frsc As ScaleModeConstants: If Not IsMissing(FromScale) Then frsc = CLng(FromScale) Else If Not IsMissing(FromScale) Then frsc = m_ScaleMode Else frsc = vbUser
+    Dim tosc As ScaleModeConstants: If Not IsMissing(ToScale) Then tosc = CLng(ToScale) Else tosc = m_ScaleMode
+    
+    'first scale everything to vbPixels
+    Const dpi  As Double = 96#        ' dpi = dots per inch, dots = pixel!
+    Const cmpi As Double = 2.54       ' centimeter per inch
+    Const mmpi As Double = 25.4       ' millimeter per inch
+    Const popi As Double = 72#        ' points per inch
+    Const ppch As Double = 8#
+    
+    Const cmpp As Double = dpi / cmpi ' 37.79524
+    Const mmpp As Double = dpi / mmpi '  3.779524
+    Const chpp As Double = 1 / ppch   '  0.125
+    Const ipp  As Double = 1 / dpi    '  0.01041667
+    'Umrechnungsfaktor in pixel
+    Dim f1 As Double
+    Select Case frsc
+    Case ScaleModeConstants.vbUser:        f1 = dpi / mmpi / 100          '  0.03779524
+    Case ScaleModeConstants.vbTwips:       f1 = 1 / Screen.TwipsPerPixelX '  0.06666667
+    Case ScaleModeConstants.vbPoints:      f1 = dpi / popi                '  1.333333
+    Case ScaleModeConstants.vbPixels:      f1 = 1                         '  1
+    Case ScaleModeConstants.vbCharacters:  f1 = ppch                      '  8
+    Case ScaleModeConstants.vbInches:      f1 = dpi                       ' 96
+    Case ScaleModeConstants.vbMillimeters: f1 = dpi / mmpi                '  3.779524
+    Case ScaleModeConstants.vbCentimeters: f1 = dpi / cmpi                ' 37.79524
+    Case ScaleModeConstants.vbHimetric:    f1 = dpi / mmpi / 100          '  0.03779528
+    End Select
+    'Umrechnungsfaktor in ZielScale
+    Dim f2 As Double
+    Select Case tosc
+    Case ScaleModeConstants.vbTwips:       f2 = Screen.TwipsPerPixelX     ' 15
+    Case ScaleModeConstants.vbPoints:      f2 = popi / dpi                '  0.75
+    Case ScaleModeConstants.vbPixels:      f2 = 1                         '  1
+    Case ScaleModeConstants.vbCharacters:  f2 = chpp                      '  0.125
+    Case ScaleModeConstants.vbInches:      f2 = 1 / dpi                   '  0.01041667
+    Case ScaleModeConstants.vbMillimeters: f2 = mmpi / dpi                '  0.2645836
+    Case ScaleModeConstants.vbCentimeters: f2 = cmpi / dpi                '  0.02645836
+    Case ScaleModeConstants.vbHimetric:    f2 = mmpi / dpi * 100          ' 26.45833
+    End Select
+    ScaleX = Width * f1 * f2
+End Function
 
+Public Function ScaleY(Height As Single, Optional FromScale, Optional ToScale) As Single
+    Dim frsc As ScaleModeConstants: If Not IsMissing(FromScale) Then frsc = CLng(FromScale) Else If Not IsMissing(FromScale) Then frsc = m_ScaleMode Else frsc = vbUser
+    Dim tosc As ScaleModeConstants: If Not IsMissing(ToScale) Then tosc = CLng(ToScale) Else tosc = m_ScaleMode
+    
+    'first scale everything to vbPixels
+    Const dpi  As Double = 96#        ' dpi = dots per inch, dots = pixel!
+    Const cmpi As Double = 2.54       ' centimeter per inch
+    Const mmpi As Double = 25.4       ' millimeter per inch
+    Const popi As Double = 72#        ' points per inch
+    Const ppch As Double = 8#
+    
+    Const cmpp As Double = dpi / cmpi ' 37.79524
+    Const mmpp As Double = dpi / mmpi '  3.779524
+    Const chpp As Double = 1 / ppch   '  0.125
+    Const ipp  As Double = 1 / dpi    '  0.01041667
+    'Umrechnungsfaktor in pixel
+    Dim f1 As Double
+    Select Case frsc
+    Case ScaleModeConstants.vbUser:        f1 = dpi / mmpi / 100          '  0.03779524
+    Case ScaleModeConstants.vbTwips:       f1 = 1 / Screen.TwipsPerPixelY '  0.06666667
+    Case ScaleModeConstants.vbPoints:      f1 = dpi / popi                '  1.333333
+    Case ScaleModeConstants.vbPixels:      f1 = 1                         '  1
+    Case ScaleModeConstants.vbCharacters:  f1 = ppch                      '  8
+    Case ScaleModeConstants.vbInches:      f1 = dpi                       ' 96
+    Case ScaleModeConstants.vbMillimeters: f1 = dpi / mmpi                '  3.779524
+    Case ScaleModeConstants.vbCentimeters: f1 = dpi / cmpi                ' 37.79524
+    Case ScaleModeConstants.vbHimetric:    f1 = dpi / mmpi / 100          '  0.03779528
+    End Select
+    'Umrechnungsfaktor in ZielScale
+    Dim f2 As Double
+    Select Case tosc
+    Case ScaleModeConstants.vbTwips:       f2 = Screen.TwipsPerPixelY     ' 15
+    Case ScaleModeConstants.vbPoints:      f2 = popi / dpi                '  0.75
+    Case ScaleModeConstants.vbPixels:      f2 = 1                         '  1
+    Case ScaleModeConstants.vbCharacters:  f2 = chpp                      '  0.125
+    Case ScaleModeConstants.vbInches:      f2 = 1 / dpi                   '  0.01041667
+    Case ScaleModeConstants.vbMillimeters: f2 = mmpi / dpi                '  0.2645836
+    Case ScaleModeConstants.vbCentimeters: f2 = cmpi / dpi                '  0.02645836
+    Case ScaleModeConstants.vbHimetric:    f2 = mmpi / dpi * 100          ' 26.45833
+    End Select
+    ScaleY = Height * f1 * f2
+End Function
+
+Public Sub SetFocus()
+    Dim hr As LongPtr: hr = SetFocusApi(m_hWnd)
+End Sub
 
 'Public Sub Show(Optional Modal As FormShowConstants, Optional OwnerForm As Object): End Property
 Public Property Get ShowInTaskbar() As Boolean
@@ -1192,7 +1474,7 @@ Public Sub ZOrder(Optional Position)
     'Legt ein angegebenes Objekt an der ersten oder letzten Stelle der Z-Reihenfolge innerhalb der zugehörigen Grafikstufe ab.
     'EWndShowZPos ? ?
     With m_Window
-        SetWindowPos m_hWnd, 0&, .X, .Y, .cx, .cy, CLng(Position)
+        SetWindowPos m_hWnd, 0&, .x, .y, .cx, .cy, CLng(Position)
     End With
 End Sub
 
@@ -1202,6 +1484,12 @@ End Sub
 'Public Property Let Caption(ByVal Value As String)
 '    m_Caption = Value
 'End Property
+Public Property Get ClassStyle() As EClsStyle
+    ClassStyle = m_WndCls.Style
+End Property
+Public Property Let ClassStyle(ByVal Value As EClsStyle)
+    m_WndCls.Style = m_WndCls.Style Or Value
+End Property
 
 Public Property Get Style() As EWndStyle
     Style = m_Window.Style
@@ -1230,22 +1518,22 @@ Public Property Get hWnd() As LongPtr
 End Property
 
 Public Property Get Left() As Single
-    Left = m_Window.X
+    Left = m_Window.x
 End Property
 Public Property Let Left(ByVal Value As Single)
     With m_Window
-        .X = Value
-        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
+        .x = Value
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
     End With
 End Property
 
 Public Property Get Top() As Single
-    Top = m_Window.Y
+    Top = m_Window.y
 End Property
 Public Property Let Top(ByVal Value As Single)
     With m_Window
-        .Y = Value
-        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
+        .y = Value
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
     End With
 End Property
 
@@ -1255,7 +1543,7 @@ End Property
 Public Property Let Width(ByVal Value As Single)
     With m_Window
         .cx = Value
-        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
     End With
 End Property
 
@@ -1265,27 +1553,99 @@ End Property
 Public Property Let Height(ByVal Value As Single)
     With m_Window
         .cy = Value
-        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
     End With
 End Property
 
 Public Sub Move(ByVal Left As Single, Optional ByVal Top, Optional ByVal Width, Optional ByVal Height)
     With m_Window
-        .X = CLng(Left)
-        If Not IsMissing(Top) Then .Y = CLng(Top)
+        .x = CLng(Left)
+        If Not IsMissing(Top) Then .y = CLng(Top)
         If Not IsMissing(Width) Then .cx = CLng(Width)
         If Not IsMissing(Height) Then .cy = CLng(Height)
         'SetWindowPos m_hWnd, 0&, .Left, .Top, .Width, .Height
-        MoveWindow m_hWnd, .X, .Y, .cx, .cy, True
+        MoveWindow m_hWnd, .x, .y, .cx, .cy, True
     End With
 End Sub
+
+'
+Public Property Get HScrollMin() As Long
+    '
+End Property
+Public Property Let HScrollMin(ByVal Value As Long)
+    '
+End Property
+Public Property Get HScrollMax() As Long
+    '
+End Property
+Public Property Let HScrollMax(ByVal Value As Long)
+    '
+End Property
+Public Property Get HScrollValue() As Long
+    '
+End Property
+Public Property Get HScrollSmallChange() As Long
+    '
+End Property
+Public Property Let HScrollSmallChange(ByVal Value As Long)
+    '
+End Property
+Public Property Get HScrollLargeChange() As Long
+    '
+End Property
+Public Property Let HScrollLargeChange(ByVal Value As Long)
+    '
+End Property
+
+
+Public Property Get VScrollMin() As Long
+    '
+End Property
+Public Property Let VScrollMin(ByVal Value As Long)
+    '
+End Property
+Public Property Get VScrollMax() As Long
+    '
+End Property
+Public Property Let VScrollMax(ByVal Value As Long)
+    '
+End Property
+Public Property Get VScrollValue() As Long
+    '
+End Property
+Public Property Get VScrollSmallChange() As Long
+    '
+End Property
+Public Property Let VHScrollSmallChange(ByVal Value As Long)
+    '
+End Property
+Public Property Get VScrollLargeChange() As Long
+    '
+End Property
+Public Property Let VScrollLargeChange(ByVal Value As Long)
+    '
+End Property
+
+'Private Sub VScroll1_Change()
+'    '
+'    VScroll1.Min
+'    VScroll1.Max
+'    VScroll1.Value
+'    VScroll1.SmallChange
+'    VScroll1.LargeChange
+'
+'End Sub
+'Private Sub VScroll1_Scroll()
+'    '
+'End Sub
+
 
 Friend Sub OnActivate():                                                               RaiseEvent Activate:                                                                                                      End Sub
 Friend Sub OnClick():                                                                  RaiseEvent Click:                                                                                                         End Sub
 Friend Sub OnDblClick():                                                               RaiseEvent DblClick:                                                                                                      End Sub
 Friend Sub OnDeactivate():                                                             RaiseEvent Deactivate:                                                                                                    End Sub
-Friend Sub OnDragDrop(Source As Control, X As Single, Y As Single):                    RaiseEvent DragDrop(Source, X, Y):                                                                                        End Sub
-Friend Sub OnDragOver(Source As Control, X As Single, Y As Single, State As Integer):  RaiseEvent DragOver(Source, X, Y, State):                                                                                 End Sub
+Friend Sub OnDragDrop(Source As Control, x As Single, y As Single):                    RaiseEvent DragDrop(Source, x, y):                                                                                        End Sub
+Friend Sub OnDragOver(Source As Control, x As Single, y As Single, State As Integer):  RaiseEvent DragOver(Source, x, y, State):                                                                                 End Sub
 Friend Sub OnGotFocus():                                                               RaiseEvent GotFocus:                                                                                                      End Sub
 Friend Sub OnInitialize():                                                             RaiseEvent Initialize:                                                                                                    End Sub
 Friend Sub OnKeyDown(KeyCode As Integer, Shift As Integer):                            RaiseEvent KeyDown(KeyCode, Shift):                                                                                       End Sub
@@ -1297,20 +1657,61 @@ Friend Sub OnLinkExecute(CmdStr As String, Cancel As Integer):                  
 Friend Sub OnLinkOpen(Cancel As Integer):                                              RaiseEvent LinkOpen(Cancel):                                                                                              End Sub
 Friend Sub OnLoad():                                                                   RaiseEvent Load:                                                                                                          End Sub
 Friend Sub OnLostFocus():                                                              RaiseEvent LostFocus:                                                                                                     End Sub
-Friend Sub OnMouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseDown(Button, Shift, X, Y):                                                                                End Sub
-Friend Sub OnMouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single): RaiseEvent MouseMove(Button, Shift, X, Y):                                                                                End Sub
-Friend Sub OnMouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single):   RaiseEvent MouseUp(Button, Shift, X, Y):                                                                                  End Sub
+Friend Sub OnMouseDown(Button As Integer, Shift As Integer, x As Single, y As Single): RaiseEvent MouseDown(Button, Shift, x, y):                                                                                End Sub
+
+
+'Const MK_LBUTTON  = &H1&  ' Die linke Maustaste ist gedrückt.
+'Const MK_RBUTTON  = &H2&  ' Die rechte Maustaste ist gedrückt.
+'Const MK_SHIFT    = &H4&  ' Die UMSCHALTTASTE ist gedrückt.
+'Const MK_CONTROL  = &H8&  ' Die STRG-TASTE ist gedrückt.
+'Const MK_MBUTTON  = &H10& ' Die mittlere Maustaste ist gedrückt.
+'Const MK_XBUTTON1 = &H20& ' Die erste X-Taste ist ausgefallen.
+'Const MK_XBUTTON2 = &H40& ' Die zweite X-Taste ist ausgefallen.
+
+'Enum MouseButtonConstants
+'   vbLeftButton = 1
+'   vbRightButton = 2
+'   vbMiddleButton = 4
+'End Enum
+'Enum ShiftConstants
+'    vbShiftMask = 1
+'    vbCtrlMask = 2
+'    vbAltMask = 4
+'End Enum
+
+Private Function MK_ToButton(ByVal MK As Integer) As Integer
+    If (MK And MK_LBUTTON) = MK_LBUTTON Then MK_ToButton = MouseButtonConstants.vbLeftButton:   Exit Function
+    If (MK And MK_RBUTTON) = MK_RBUTTON Then MK_ToButton = MouseButtonConstants.vbRightButton:  Exit Function
+    If (MK And MK_MBUTTON) = MK_MBUTTON Then MK_ToButton = MouseButtonConstants.vbMiddleButton: Exit Function
+End Function
+Private Function MK_ToShift(ByVal MK As Integer) As Integer
+    If (MK And MK_SHIFT) = MK_SHIFT Then MK_ToShift = MK_ToShift Or ShiftConstants.vbShiftMask
+    If (MK And MK_CONTROL) = MK_CONTROL Then MK_ToShift = MK_ToShift Or ShiftConstants.vbCtrlMask
+    'what about Alt-key???
+    'If (MK And MK_SHIFT) = MK_CONTROL Then MK_ToShift = vbShiftMask: Exit Function
+End Function
+
+Friend Sub OnMouseMove(Button As Integer, Shift As Integer, x As Single, y As Single): RaiseEvent MouseMove(MK_ToButton(Button), MK_ToShift(Shift), x, y):                                                       End Sub
+Friend Sub OnMouseUp(Button As Integer, Shift As Integer, x As Single, y As Single):   RaiseEvent MouseUp(Button, Shift, x, y):                                                                                  End Sub
 Friend Sub OnOLECompleteDrag(Effect As Long):                                          RaiseEvent OLECompleteDrag(Effect):                                                                                       End Sub
-Friend Sub OnOLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single):                   RaiseEvent OLEDragDrop(Data, Effect, Button, Shift, X, Y):        End Sub
-Friend Sub OnOLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single, State As Integer): RaiseEvent OLEDragOver(Data, Effect, Button, Shift, X, Y, State): End Sub
+Friend Sub OnOLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single):                   RaiseEvent OLEDragDrop(Data, Effect, Button, Shift, x, y):        End Sub
+Friend Sub OnOLEDragOver(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single, State As Integer): RaiseEvent OLEDragOver(Data, Effect, Button, Shift, x, y, State): End Sub
 Friend Sub OnOLEGiveFeedback(Effect As Long, DefaultCursors As Boolean):               RaiseEvent OLEGiveFeedback(Effect, DefaultCursors):                                                                       End Sub
 Friend Sub OnOLESetData(Data As DataObject, DataFormat As Integer):                    RaiseEvent OLESetData(Data, DataFormat):                                                                                  End Sub
 Friend Sub OnOLEStartDrag(Data As DataObject, AllowedEffects As Long):                 RaiseEvent OLEStartDrag(Data, AllowedEffects):                                                                            End Sub
 Friend Sub OnPaint():                                                                  RaiseEvent Paint:                                                                                                         End Sub
 Friend Sub OnQueryUnload(Cancel As Integer, UnloadMode As Integer):                    RaiseEvent QueryUnload(Cancel, UnloadMode):                                                                               End Sub
-Friend Sub OnResize():                                                                 RaiseEvent Resize:                                                                                                        End Sub
+
+Friend Sub OnResize()
+    Dim hr As Long: hr = GetClientRect(m_hWnd, m_ClientRect)
+    RaiseEvent Resize
+End Sub
+
 Friend Sub OnTerminate():                                                              RaiseEvent Terminate:                                                                                                     End Sub
 Friend Sub OnUnload(Cancel As Integer):                                                RaiseEvent Unload(Cancel):                                                                                                End Sub
+Friend Sub OnScrollH():                                                                RaiseEvent HScrollChange:                                                                                                 End Sub
+Friend Sub OnScrollV():                                                                RaiseEvent VScrollChange:                                                                                                 End Sub
+Friend Sub OnGesture():                                                                RaiseEvent Gesture:                                                                                                       End Sub
 
 '' v #################### v '     Local ErrHandler      ' v #################### v '
 Private Function ErrHandler(ByVal FuncName As String, _
