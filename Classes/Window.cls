@@ -1318,7 +1318,7 @@ Public Function ScaleX(ByVal Width As Single, Optional FromScale, Optional ToSca
     ScaleX = Width * f1 * f2
 End Function
 
-Public Function ScaleY(Height As Single, Optional FromScale, Optional ToScale) As Single
+Public Function ScaleY(ByVal Height As Single, Optional FromScale, Optional ToScale) As Single
     Dim frsc As ScaleModeConstants: If Not IsMissing(FromScale) Then frsc = CLng(FromScale) Else If Not IsMissing(FromScale) Then frsc = m_ScaleMode Else frsc = vbUser
     Dim tosc As ScaleModeConstants: If Not IsMissing(ToScale) Then tosc = CLng(ToScale) Else tosc = m_ScaleMode
     

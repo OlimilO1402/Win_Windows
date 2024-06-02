@@ -88,11 +88,11 @@ Private WithEvents Form1 As Form1
 Attribute Form1.VB_VarHelpID = -1
 Private WithEvents Form2 As Window
 Attribute Form2.VB_VarHelpID = -1
-Private m_Monitor As Monitor
+'Private m_Monitor As Monitor
 
 Private Sub Form_Load()
-    Set m_Monitor = New Monitor
-    Debug.Print m_Monitor.Name
+    'Set m_Monitor = New Monitor
+    'Debug.Print m_Monitor.Name
     
 End Sub
 
