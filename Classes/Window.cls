@@ -1734,3 +1734,136 @@ Private Function ErrHandler(ByVal FuncName As String, _
 
 End Function
 
+'Events of .netwinform:
+' v ############################## v '    Events Aktion    ' v ############################## v '
+'Private Sub Form1_Click                         (sender As Object, e As                       EventArgs) Handles MyBase.Click                        : End Sub
+'Private Sub Form1_DoubleClick                   (sender As Object, e As                       EventArgs) Handles MyBase.DoubleClick                  : End Sub
+'Private Sub Form1_MouseCaptureChanged           (sender As Object, e As                       EventArgs) Handles MyBase.MouseCaptureChanged          : End Sub
+'Private Sub Form1_MouseClick                    (sender As Object, e As                  MouseEventArgs) Handles MyBase.MouseClick                   : End Sub
+'Private Sub Form1_MouseDoubleClick              (sender As Object, e As                  MouseEventArgs) Handles MyBase.MouseDoubleClick             : End Sub
+'Private Sub Form1_ResizeBegin                   (sender As Object, e As                       EventArgs) Handles MyBase.ResizeBegin                  : End Sub
+'Private Sub Form1_ResizeEnd                     (sender As Object, e As                       EventArgs) Handles MyBase.ResizeEnd                    : End Sub
+'Private Sub Form1_Scroll                        (sender As Object, e As                 ScrollEventArgs) Handles MyBase.Scroll                       : End Sub
+' ^ ############################## ^ '    Events Aktion    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Darstellung    ' v ############################## v '
+'Private Sub Form1_Paint                         (sender As Object, e As                  PaintEventArgs) Handles MyBase.Paint                        : End Sub
+' ^ ############################## ^ '    Events Darstellung    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Daten    ' v ############################## v '
+'Private Sub Form1_DataContextChanged            (sender As Object, e As                       EventArgs) Handles MyBase.DataContextChanged           : End Sub
+' ^ ############################## ^ '    Events Daten    ' ^ ############################## ^ '
+'
+'
+' v ############################## v '    Events Drag & Drop    ' v ############################## v '
+'Private Sub Form1_DragDrop                      (sender As Object, e As                   DragEventArgs) Handles MyBase.DragDrop                     : End Sub
+'Private Sub Form1_DragEnter                     (sender As Object, e As                   DragEventArgs) Handles MyBase.DragEnter                    : End Sub
+'Private Sub Form1_DragLeave                     (sender As Object, e As                       EventArgs) Handles MyBase.DragLeave                    : End Sub
+'Private Sub Form1_DragOver                      (sender As Object, e As                   DragEventArgs) Handles MyBase.DragOver                     : End Sub
+'Private Sub Form1_GiveFeedback                  (sender As Object, e As           GiveFeedbackEventArgs) Handles MyBase.GiveFeedback                 : End Sub
+'Private Sub Form1_QueryContinueDrag             (sender As Object, e As      QueryContinueDragEventArgs) Handles MyBase.QueryContinueDrag            : End Sub
+' ^ ############################## ^ '    Events Drag & Drop    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Focus    ' v ############################## v '
+'Private Sub Form1_Activated                     (sender As Object, e As                       EventArgs) Handles MyBase.Activated                    : End Sub
+'Private Sub Form1_Deactivate                    (sender As Object, e As                       EventArgs) Handles MyBase.Deactivate                   : End Sub
+'Private Sub Form1_Enter                         (sender As Object, e As                       EventArgs) Handles MyBase.Enter                        : End Sub
+'Private Sub Form1_Leave                         (sender As Object, e As                       EventArgs) Handles MyBase.Leave                        : End Sub
+'Private Sub Form1_Validated                     (sender As Object, e As                       EventArgs) Handles MyBase.Validated                    : End Sub
+'Private Sub Form1_Validating                    (sender As Object, e As                 CancelEventArgs) Handles MyBase.Validating                   : End Sub
+' ^ ############################## ^ '    Events Focus    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Property Changed    ' v ############################## v '
+'Private Sub Form1_AutoSizeChanged               (sender As Object, e As                       EventArgs) Handles MyBase.AutoSizeChanged              : End Sub
+'Private Sub Form1_AutoValidateChanged           (sender As Object, e As                       EventArgs) Handles MyBase.AutoValidateChanged          : End Sub
+'Private Sub Form1_BackColorChanged              (sender As Object, e As                       EventArgs) Handles MyBase.BackColorChanged             : End Sub
+'Private Sub Form1_BackgroundImageChanged        (sender As Object, e As                       EventArgs) Handles MyBase.BackgroundImageChanged       : End Sub
+'Private Sub Form1_BackgroundImageLayoutChanged  (sender As Object, e As                       EventArgs) Handles MyBase.BackgroundImageLayoutChanged : End Sub
+'Private Sub Form1_BindingContextChanged         (sender As Object, e As                       EventArgs) Handles MyBase.BindingContextChanged        : End Sub
+'Private Sub Form1_CausesValidationChanged       (sender As Object, e As                       EventArgs) Handles MyBase.CausesValidationChanged      : End Sub
+'Private Sub Form1_ClientSizeChanged             (sender As Object, e As                       EventArgs) Handles MyBase.ClientSizeChanged            : End Sub
+'Private Sub Form1_ContextMenuStripChanged       (sender As Object, e As                       EventArgs) Handles MyBase.ContextMenuStripChanged      : End Sub
+'Private Sub Form1_CursorChanged                 (sender As Object, e As                       EventArgs) Handles MyBase.CursorChanged                : End Sub
+'Private Sub Form1_DockChanged                   (sender As Object, e As                       EventArgs) Handles MyBase.DockChanged                  : End Sub
+'Private Sub Form1_EnabledChanged                (sender As Object, e As                       EventArgs) Handles MyBase.EnabledChanged               : End Sub
+'Private Sub Form1_FontChanged                   (sender As Object, e As                       EventArgs) Handles MyBase.FontChanged                  : End Sub
+'Private Sub Form1_ForeColorChanged              (sender As Object, e As                       EventArgs) Handles MyBase.ForeColorChanged             : End Sub
+'Private Sub Form1_LocationChanged               (sender As Object, e As                       EventArgs) Handles MyBase.LocationChanged              : End Sub
+'Private Sub Form1_MaximizedBoundsChanged        (sender As Object, e As                       EventArgs) Handles MyBase.MaximizedBoundsChanged       : End Sub
+'Private Sub Form1_MaximumSizeChanged            (sender As Object, e As                       EventArgs) Handles MyBase.MaximumSizeChanged           : End Sub
+'Private Sub Form1_MinimumSizeChanged            (sender As Object, e As                       EventArgs) Handles MyBase.MinimumSizeChanged           : End Sub
+'Private Sub Form1_ParentChanged                 (sender As Object, e As                       EventArgs) Handles MyBase.ParentChanged                : End Sub
+'Private Sub Form1_RegionChanged                 (sender As Object, e As                       EventArgs) Handles MyBase.RegionChanged                : End Sub
+'Private Sub Form1_RightToLeftChanged            (sender As Object, e As                       EventArgs) Handles MyBase.RightToLeftChanged           : End Sub
+'Private Sub Form1_RightToLeftLayoutChanged      (sender As Object, e As                       EventArgs) Handles MyBase.RightToLeftLayoutChanged     : End Sub
+'Private Sub Form1_SizeChanged                   (sender As Object, e As                       EventArgs) Handles MyBase.SizeChanged                  : End Sub
+'Private Sub Form1_TextChanged                   (sender As Object, e As                       EventArgs) Handles MyBase.TextChanged                  : End Sub
+'Private Sub Form1_VisibleChanged                (sender As Object, e As                       EventArgs) Handles MyBase.VisibleChanged               : End Sub
+' ^ ############################## ^ '    Events Property Changed    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Layout Changed    ' v ############################## v '
+'Private Sub Form1_DpiChanged                    (sender As Object, e As             DpiChangedEventArgs) Handles MyBase.DpiChanged                   : End Sub
+'Private Sub Form1_DpiChangedAfterParent         (sender As Object, e As                       EventArgs) Handles MyBase.DpiChangedAfterParent        : End Sub
+'Private Sub Form1_DpiChangedBeforeParent        (sender As Object, e As                       EventArgs) Handles MyBase.DpiChangedBeforeParent       : End Sub
+'Private Sub Form1_Layout                        (sender As Object, e As                 LayoutEventArgs) Handles MyBase.Layout                       : End Sub
+'Private Sub Form1_MdiChildActivate              (sender As Object, e As                       EventArgs) Handles MyBase.MdiChildActivate             : End Sub
+'Private Sub Form1_Move                          (sender As Object, e As                       EventArgs) Handles MyBase.Move                         : End Sub
+'Private Sub Form1_PaddingChanged                (sender As Object, e As                       EventArgs) Handles MyBase.PaddingChanged               : End Sub
+'Private Sub Form1_Resize                        (sender As Object, e As                       EventArgs) Handles MyBase.Resize                       : End Sub
+' ^ ############################## ^ '    Events Layout    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Mouse    ' v ############################## v '
+'Private Sub Form1_MouseDown                     (sender As Object, e As                  MouseEventArgs) Handles MyBase.MouseDown                    : End Sub
+'Private Sub Form1_MouseEnter                    (sender As Object, e As                       EventArgs) Handles MyBase.MouseEnter                   : End Sub
+'Private Sub Form1_MouseHover                    (sender As Object, e As                       EventArgs) Handles MyBase.MouseHover                   : End Sub
+'Private Sub Form1_MouseLeave                    (sender As Object, e As                       EventArgs) Handles MyBase.MouseLeave                   : End Sub
+'Private Sub Form1_MouseMove                     (sender As Object, e As                  MouseEventArgs) Handles MyBase.MouseMove                    : End Sub
+'Private Sub Form1_MouseUp                       (sender As Object, e As                  MouseEventArgs) Handles MyBase.MouseUp                      : End Sub
+' ^ ############################## ^ '    Events Mouse    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Keyboard    ' v ############################## v '
+'Private Sub Form1_KeyDown                       (sender As Object, e As                    KeyEventArgs) Handles MyBase.KeyDown                      : End Sub
+'Private Sub Form1_KeyPress                      (sender As Object, e As               KeyPressEventArgs) Handles MyBase.KeyPress                     : End Sub
+'Private Sub Form1_KeyUp                         (sender As Object, e As                    KeyEventArgs) Handles MyBase.KeyUp                        : End Sub
+'Private Sub Form1_PreviewKeyDown                (sender As Object, e As         PreviewKeyDownEventArgs) Handles MyBase.PreviewKeyDown               : End Sub
+' ^ ############################## ^ '    Events Keyboard    ' ^ ############################## ^ '
+'
+' v ############################## v '    Events Behaviour    ' v ############################## v '
+'Private Sub Form1_ChangeUICues                  (sender As Object, e As                 UICuesEventArgs) Handles MyBase.ChangeUICues                 : End Sub
+'Private Sub Form1_ControlAdded                  (sender As Object, e As                ControlEventArgs) Handles MyBase.ControlAdded                 : End Sub
+'Private Sub Form1_ControlRemoved                (sender As Object, e As                ControlEventArgs) Handles MyBase.ControlRemoved               : End Sub
+'Private Sub Form1_FormClosed                    (sender As Object, e As             FormClosedEventArgs) Handles MyBase.FormClosed                   : End Sub
+'Private Sub Form1_FormClosing                   (sender As Object, e As            FormClosingEventArgs) Handles MyBase.FormClosing                  : End Sub
+'Private Sub Form1_HelpButtonClicked             (sender As Object, e As                 CancelEventArgs) Handles MyBase.HelpButtonClicked            : End Sub
+'Private Sub Form1_HelpRequested                 (sender As Object, e As                   HelpEventArgs) Handles MyBase.HelpRequested                : End Sub
+'Private Sub Form1_ImeModeChanged                (sender As Object, e As                       EventArgs) Handles MyBase.ImeModeChanged               : End Sub
+'Private Sub Form1_InputLanguageChanged          (sender As Object, e As   InputLanguageChangedEventArgs) Handles MyBase.InputLanguageChanged         : End Sub
+'Private Sub Form1_InputLanguageChanging         (sender As Object, e As  InputLanguageChangingEventArgs) Handles MyBase.InputLanguageChanging        : End Sub
+'Private Sub Form1_Load                          (sender As Object, e As                       EventArgs) Handles MyBase.Load                         : End Sub
+'Private Sub Form1_QueryAccessibilityHelp        (sender As Object, e As QueryAccessibilityHelpEventArgs) Handles MyBase.QueryAccessibilityHelp       : End Sub
+'Private Sub Form1_Shown                         (sender As Object, e As                       EventArgs) Handles MyBase.Shown                        : End Sub
+'Private Sub Form1_StyleChanged                  (sender As Object, e As                       EventArgs) Handles MyBase.StyleChanged                 : End Sub
+'Private Sub Form1_SystemColorsChanged           (sender As Object, e As                       EventArgs) Handles MyBase.SystemColorsChanged          : End Sub
+' ^ ############################## ^ '    Events Behaviour    ' ^ ############################## ^ '
+
+'                       EventArgs
+'                Cancel EventArgs
+'               Control EventArgs
+'            DpiChanged EventArgs
+'                  Drag EventArgs
+'            FormClosed EventArgs
+'           FormClosing EventArgs
+'          GiveFeedback EventArgs
+'                  Help EventArgs
+' InputLanguageChanged  EventArgs
+' InputLanguageChanging EventArgs
+'                   Key EventArgs
+'              KeyPress EventArgs
+'                Layout EventArgs
+'                 Mouse EventArgs
+'                 Paint EventArgs
+'        PreviewKeyDown EventArgs
+'QueryAccessibilityHelp EventArgs
+'     QueryContinueDrag EventArgs
+'                Scroll EventArgs
+'                UICues EventArgs
