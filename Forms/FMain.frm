@@ -158,7 +158,7 @@ Private Sub BtnCreateWindow_Click()
     Form2.Load
     Form2.Show
     
-    Dim btn As CommandButton: Set btn = Form2.Controls_Add("VB.CommandButton", "Button1", Nothing)
+    'Dim btn As CommandButton: Set btn = Form2.Controls_Add("VB.CommandButton", "Button1", Nothing)
     'btn.Move 30, 30, 90, 60
     
     
